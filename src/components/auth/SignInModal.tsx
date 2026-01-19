@@ -38,7 +38,7 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
         const handleMessage = (event: MessageEvent) => {
             if (event.origin !== window.location.origin) return;
             if (event.data?.type === 'AUTH_SUCCESS') {
-                router.refresh();
+                window.location.reload();
                 onClose();
             }
         };
@@ -163,7 +163,7 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
                                 console.error(res.error);
                             } else {
                                 // Success - close modal and refresh
-                                router.refresh();
+                                window.location.reload();
                                 onClose();
                             }
                         } catch (error) {
