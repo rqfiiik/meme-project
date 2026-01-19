@@ -12,6 +12,7 @@ interface WalletUser {
     id: string;
     address: string | null;
     name: string | null;
+    username: string | null;
     walletStatus: string;
     firstSeen: Date;
 }
@@ -40,7 +41,7 @@ export function WalletsClient({ wallets }: { wallets: WalletUser[] }) {
                                     {wallet.address || 'No Address'}
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="font-medium text-white">{wallet.name || (wallet as any).username || 'Unknown User'}</div>
+                                    <div className="font-medium text-white">{wallet.name || wallet.username || 'Unknown User'}</div>
                                 </td>
                                 <td className="px-6 py-4 font-mono text-white">
                                     {wallet.address ? <WalletBalance address={wallet.address} /> : '-'}

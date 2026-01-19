@@ -19,6 +19,7 @@ export default async function WalletsPage() {
             id: true,
             address: true,
             name: true,
+            username: true,
             walletStatus: true,
             firstSeen: true,
         }
