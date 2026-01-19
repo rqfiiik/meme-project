@@ -1,0 +1,81 @@
+import NextAuth from "next-auth"
+import Google from "next-auth/providers/google"
+import Credentials from "next-auth/providers/credentials"
+import { PrismaAdapter } from "@auth/prisma-adapter"
+import { prisma } from "@/lib/prisma"
+
+const providers: any[] = [
+    Credentials({
+        name: "Credentials",
+        credentials: {
+            email: { label: "Email", type: "email" },
+            password: { label: "Password", type: "password" },
+        },
+        authorize: async (credentials) => {
+            // Hardcoded Admin Check as Requested
+            const adminEmail = "rqfik.lakehal@gmail.com";
+            const adminPass = "RA07092004fik*";
+
+            if (credentials?.email === adminEmail && credentials?.password === adminPass) {
+                // Check if Admin exists in DB (to link data), if not create/return minimal
+                try {
+                    // Check DB for admin
+                    const user = await prisma.user.findUnique({ where: { email: adminEmail } });
+                    if (user) return user;
+
+                    // Fallback to hardcoded ID if verified in DB but somehow fetch failed
+                    return {
+                        id: "cmkkd95ig0000hfccb1blua6m",
+                        name: "Admin",
+                        email: "rqfik.lakehal@gmail.com",
+                        role: "admin",
+                    }
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            return null;
+        },
+    }),
+];
+
+if (process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_ID !== 'placeholder' && process.env.AUTH_GOOGLE_SECRET && process.env.AUTH_GOOGLE_SECRET !== 'placeholder') {
+    providers.push(Google({
+        profile(profile) {
+            return {
+                id: profile.sub,
+                name: profile.name,
+                email: profile.email,
+                image: profile.picture,
+                firstName: profile.given_name,
+                lastName: profile.family_name,
+                username: profile.email?.split('@')[0], // Default username
+                role: "user",
+            }
+        }
+    }));
+}
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
+    adapter: PrismaAdapter(prisma),
+    providers,
+    session: {
+        strategy: "jwt",
+    },
+    callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                token.role = user.role;
+            }
+            return token;
+        },
+        async session({ session, token }) {
+            if (session.user) {
+                session.user.role = token.role as string;
+                session.user.id = token.sub as string;
+            }
+            return session;
+        }
+    },
+})
