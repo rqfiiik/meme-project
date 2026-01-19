@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Rocket, Droplets, Plus, ExternalLink, LayoutDashboard, DollarSign } from 'lucide-react';
 import Link from 'next/link';
+import '@/components/auth/SignInModal.css';
 
 interface DashboardModalProps {
     isOpen: boolean;
@@ -24,19 +25,31 @@ export function DashboardModal({ isOpen, onClose, user }: DashboardModalProps) {
     const [tokens, setTokens] = useState<Token[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [shouldRender, setShouldRender] = useState(false);
+    const [isAnimating, setIsAnimating] = useState(false);
 
     useEffect(() => {
         setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
             fetchTokens();
+            setShouldRender(true);
+            const timer = setTimeout(() => {
+                setIsAnimating(true);
+            }, 50);
+            return () => clearTimeout(timer);
         } else {
             document.body.style.overflow = 'unset';
+            setIsAnimating(false);
+            const timer = setTimeout(() => {
+                setShouldRender(false);
+            }, 300);
+            return () => clearTimeout(timer);
         }
-        return () => {
-            setMounted(false);
-            document.body.style.overflow = 'unset';
-        };
     }, [isOpen]);
 
     const fetchTokens = async () => {
@@ -54,18 +67,18 @@ export function DashboardModal({ isOpen, onClose, user }: DashboardModalProps) {
         }
     };
 
-    if (!mounted || !isOpen) return null;
+    if (!mounted || !shouldRender) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+        <div className={`fixed inset-0 z-[100] flex items-center justify-center modal-overlay ${isAnimating ? 'open' : 'closing'}`}>
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                className="absolute inset-0"
                 onClick={onClose}
             />
 
             {/* Modal */}
-            <div className="relative z-10 w-full max-w-4xl bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className={`relative z-10 w-full max-w-4xl bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] modal-content ${isAnimating ? 'open' : 'closing'}`}>
 
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-white/10">
