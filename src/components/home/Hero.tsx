@@ -13,7 +13,8 @@ export function Hero() {
         <section className="relative overflow-hidden py-20 lg:py-32">
 
             {/* Background Glows */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/20 blur-[120px] rounded-full -z-10 opacity-50 pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/30 blur-[120px] rounded-full -z-10 animate-pulse-slow" />
+            <div className="absolute top-1/2 left-1/2 translate-x-1/4 -translate-y-1/4 w-[500px] h-[500px] bg-accent/20 blur-[100px] rounded-full -z-10" />
 
             <div className="container px-4 md:px-6 mx-auto flex flex-col items-center text-center space-y-8">
 
@@ -22,9 +23,9 @@ export function Hero() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-medium text-primary backdrop-blur-sm"
+                    className="inline-flex items-center rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-sm font-medium text-accent backdrop-blur-sm shadow-[0_0_15px_-3px_rgba(16,185,129,0.3)]"
                 >
-                    <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse" />
+                    <span className="flex h-2 w-2 rounded-full bg-accent mr-2 animate-pulse" />
                     v2.0 is Live: Create Components Now Open
                 </motion.div>
 
@@ -35,8 +36,8 @@ export function Hero() {
                     transition={{ delay: 0.2 }}
                     className="space-y-4 max-w-4xl"
                 >
-                    <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-6xl md:text-7xl">
-                        Launch Your Own Coin <span className="text-primary block sm:inline">FAST ⚡</span>
+                    <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-6xl md:text-7xl leading-tight">
+                        Launch Your Own Coin <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">FAST ⚡</span>
                     </h1>
                     <p className="mx-auto max-w-2xl text-lg text-text-secondary md:text-xl">
                         Launch your own token on Solana in seconds. No coding required.

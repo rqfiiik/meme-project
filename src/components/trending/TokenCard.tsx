@@ -50,7 +50,7 @@ export function TokenCard({ profile }: TokenCardProps) {
     const cloneUrl = `/create-token?name=${encodeURIComponent(cloneName)}&symbol=${encodeURIComponent(cloneSymbol)}&image=${encodeURIComponent(cloneImage)}&website=${encodeURIComponent(website)}&twitter=${encodeURIComponent(twitter)}&telegram=${encodeURIComponent(telegram)}&clone=true`;
 
     return (
-        <div className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-border bg-surface/50 p-5 transition-all hover:border-primary/50 hover:shadow-[0_0_20px_-5px_rgba(92,2,228,0.3)]">
+        <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/5 bg-white/5 backdrop-blur-xl px-5 pt-5 pb-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_8px_30px_-10px_rgba(124,58,237,0.5)]">
 
             {/* Header / Banner */}
             {profile.header && (
@@ -62,7 +62,7 @@ export function TokenCard({ profile }: TokenCardProps) {
 
             <div className="relative z-10 flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="relative h-12 w-12 overflow-hidden rounded-full border border-border bg-background shrink-0">
+                    <div className="relative h-12 w-12 overflow-hidden rounded-xl border border-white/10 bg-black/40 shrink-0 shadow-lg group-hover:scale-105 transition-transform">
                         {profile.icon ? (
                             <Image src={profile.icon} alt="Token Icon" fill className="object-cover" />
                         ) : (

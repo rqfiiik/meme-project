@@ -2,22 +2,35 @@
 
 :root {
   /* Surface colors */
-  --background: #191919;
-  --surface: #262626;
-  --surface-hover: #333333;
-  
-  /* Text colors */
-  --foreground: #FFFFFF;
-  --text-secondary: #D1D5DB; /* gray-300 */
-  --text-muted: #9CA3AF; /* gray-400 */
+  --background: #09090b;
+  /* Zinc 950 - Deep dark */
+  --surface: #18181b;
+  /* Zinc 900 */
+  --surface-hover: #27272a;
+  /* Zinc 800 */
 
-  /* Primary Accent */
-  --primary: #5C02E4;
-  --primary-hover: #4B02BC;
-  --primary-foreground: #FFFFFF;
-  
+  /* Text colors */
+  --foreground: #fafafa;
+  --text-secondary: #a1a1aa;
+  /* Zinc 400 */
+  --text-muted: #71717a;
+  /* Zinc 500 */
+
+  /* Primary Accent - Electric Purple */
+  --primary: #7c3aed;
+  /* Violet 600 */
+  --primary-hover: #6d28d9;
+  /* Violet 700 */
+  --primary-foreground: #ffffff;
+
+  /* Secondary Accent - Cyber Green */
+  --accent: #10b981;
+  /* Emerald 500 - Bright Green pop */
+  --accent-foreground: #ffffff;
+
   /* Borders */
-  --border: #404040;
+  --border: #27272a;
+  /* Zinc 800 */
 }
 
 body {
@@ -29,17 +42,20 @@ body {
 }
 
 @theme {
-    --color-background: var(--background);
-    --color-surface: var(--surface);
-    --color-surface-hover: var(--surface-hover);
-    
-    --color-foreground: var(--foreground);
-    --color-text-secondary: var(--text-secondary);
-    --color-text-muted: var(--text-muted);
-    
-    --color-primary: var(--primary);
-    --color-primary-hover: var(--primary-hover);
-    --color-primary-foreground: var(--primary-foreground);
-    
-    --color-border: var(--border);
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+
+  --color-foreground: var(--foreground);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-border: var(--border);
 }
