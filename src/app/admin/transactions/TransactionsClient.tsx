@@ -10,7 +10,7 @@ interface Transaction {
     user: {
         email: string | null;
         name: string | null;
-    };
+    } | null;
     status?: string; // Mock status since schema doesn't have it yet, or derive it
 }
 
@@ -44,8 +44,8 @@ export function TransactionsClient({ transactions }: { transactions: Transaction
                                     </a>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="font-medium text-white">{tx.user.name || 'Unknown'}</div>
-                                    <div className="text-xs">{tx.user.email}</div>
+                                    <div className="font-medium text-white">{tx.user?.name || 'Unknown User'}</div>
+                                    <div className="text-xs">{tx.user?.email || 'No Email'}</div>
                                 </td>
                                 <td className="px-6 py-4">
                                     {new Date(tx.date).toLocaleString()}
