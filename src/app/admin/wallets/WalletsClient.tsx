@@ -1,8 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AlertCircle, Shield, ShieldOff, CheckCircle } from 'lucide-react';
 import { toggleWalletStatus } from '@/app/actions/admin';
+import { Connection, PublicKey, clusterApiUrl, LAMPORTS_PER_SOL } from '@solana/web3.js';
+
+// Use a single shared connection
+const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
 
 interface WalletUser {
     id: string;
@@ -23,6 +27,7 @@ export function WalletsClient({ wallets }: { wallets: WalletUser[] }) {
                         <tr>
                             <th className="px-6 py-4">Address</th>
                             <th className="px-6 py-4">Linked User</th>
+                            <th className="px-6 py-4">Balance (SOL)</th>
                             <th className="px-6 py-4">Status</th>
                             <th className="px-6 py-4">Connected</th>
                             <th className="px-6 py-4 text-right">Actions</th>
@@ -36,6 +41,9 @@ export function WalletsClient({ wallets }: { wallets: WalletUser[] }) {
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="font-medium text-white">{wallet.name || (wallet as any).username || 'Unknown User'}</div>
+                                </td>
+                                <td className="px-6 py-4 font-mono text-white">
+                                    {wallet.address ? <WalletBalance address={wallet.address} /> : '-'}
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${wallet.walletStatus === 'blacklisted'
@@ -63,6 +71,28 @@ export function WalletsClient({ wallets }: { wallets: WalletUser[] }) {
             </div>
         </div>
     );
+}
+
+function WalletBalance({ address }: { address: string }) {
+    const [balance, setBalance] = useState<number | null>(null);
+
+    useEffect(() => {
+        let isMounted = true;
+        const fetchBalance = async () => {
+            try {
+                const pubKey = new PublicKey(address);
+                const lamports = await connection.getBalance(pubKey);
+                if (isMounted) setBalance(lamports / LAMPORTS_PER_SOL);
+            } catch (e) {
+                // console.error(e);
+            }
+        };
+        fetchBalance();
+        return () => { isMounted = false; };
+    }, [address]);
+
+    if (balance === null) return <span className="text-text-muted animate-pulse">...</span>;
+    return <span>{balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>;
 }
 
 function WalletActions({ wallet }: { wallet: WalletUser }) {

@@ -11,7 +11,7 @@ interface Transaction {
         email: string | null;
         name: string | null;
     } | null;
-    status?: string; // Mock status since schema doesn't have it yet, or derive it
+    status: string;
 }
 
 export function TransactionsClient({ transactions }: { transactions: Transaction[] }) {
@@ -54,7 +54,7 @@ export function TransactionsClient({ transactions }: { transactions: Transaction
                                     {tx.amount} SOL
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                    <StatusBadge status="success" />
+                                    <StatusBadge status={tx.status || 'success'} />
                                 </td>
                             </tr>
                         ))}

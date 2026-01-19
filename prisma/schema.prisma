@@ -143,5 +143,6 @@ model Transaction {
   date        DateTime @default(now())
   userId      String?
   userAddress String? // Added for when user is not logged in but we have address
+  status      String   @default("success") // "success", "failed", "pending"
   user        User?    @relation(fields: [userId], references: [id])
 }
