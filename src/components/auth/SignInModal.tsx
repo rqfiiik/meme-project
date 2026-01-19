@@ -29,12 +29,12 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
     useEffect(() => {
         if (isOpen) {
             setShouldRender(true);
-            // Small delay to ensure render happens before adding 'open' class for transition
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    setIsAnimating(true);
-                });
-            });
+            // Use setTimeout instead of RAF to ensure browser painting cycle completes
+            // providing a small buffer for the 'closing' state (opacity 0) to be rendered first
+            const timer = setTimeout(() => {
+                setIsAnimating(true);
+            }, 50);
+            return () => clearTimeout(timer);
         } else {
             setIsAnimating(false);
             const timer = setTimeout(() => {
