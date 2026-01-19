@@ -35,14 +35,14 @@ export function WalletsClient({ wallets }: { wallets: WalletUser[] }) {
                                     {wallet.address || 'No Address'}
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="font-medium text-white">{wallet.name || 'Unknown'}</div>
+                                    <div className="font-medium text-white">{wallet.name || (wallet as any).username || 'Unknown User'}</div>
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${wallet.walletStatus === 'blacklisted'
-                                            ? 'bg-red-500/10 text-red-500'
-                                            : wallet.walletStatus === 'flagged'
-                                                ? 'bg-yellow-500/10 text-yellow-500'
-                                                : 'bg-green-500/10 text-green-500'
+                                        ? 'bg-red-500/10 text-red-500'
+                                        : wallet.walletStatus === 'flagged'
+                                            ? 'bg-yellow-500/10 text-yellow-500'
+                                            : 'bg-green-500/10 text-green-500'
                                         }`}>
                                         {wallet.walletStatus === 'active' && <CheckCircle className="h-3 w-3" />}
                                         {wallet.walletStatus === 'flagged' && <AlertCircle className="h-3 w-3" />}

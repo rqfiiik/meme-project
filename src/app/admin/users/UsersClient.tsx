@@ -51,13 +51,18 @@ export function UsersClient({ users }: { users: User[] }) {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${user.status === 'suspended'
-                                        ? 'bg-red-500/10 text-red-500'
-                                        : 'bg-green-500/10 text-green-500'
-                                        }`}>
-                                        {user.status === 'suspended' ? <ShieldAlert className="h-3 w-3" /> : <CheckCircle className="h-3 w-3" />}
-                                        {user.status || 'Active'}
-                                    </span>
+                                    <div className="flex flex-col gap-1 items-start">
+                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${user.status === 'suspended'
+                                            ? 'bg-red-500/10 text-red-500'
+                                            : 'bg-green-500/10 text-green-500'
+                                            }`}>
+                                            {user.status === 'suspended' ? <ShieldAlert className="h-3 w-3" /> : <CheckCircle className="h-3 w-3" />}
+                                            {user.status || 'Active'}
+                                        </span>
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-white/10 text-text-secondary uppercase">
+                                            {user.role}
+                                        </span>
+                                    </div>
                                 </td>
                                 <td className="px-6 py-4">
                                     {new Date(user.firstSeen).toLocaleDateString()}
