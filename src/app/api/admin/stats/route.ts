@@ -27,9 +27,15 @@ export async function GET() {
 
         const totalTransactionsCount = await prisma.transaction.count();
 
+        const logs = await prisma.adminLog.findMany({
+            orderBy: { createdAt: 'desc' },
+            take: 50
+        });
+
         return NextResponse.json({
             users,
             transactions,
+            logs,
             stats: {
                 totalRevenue: totalRevenue._sum.amount || 0,
                 totalUsers: users.length,
