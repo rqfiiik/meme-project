@@ -8,8 +8,11 @@ interface User {
     id: string;
     email: string | null;
     name: string | null;
+    username: string | null;
+    address: string | null;
     role: string;
     status: string; // "active" | "suspended"
+    planType: string | null;
     firstSeen: Date;
 }
 
@@ -22,8 +25,8 @@ export function UsersClient({ users }: { users: User[] }) {
                 <table className="w-full text-left text-sm text-text-muted">
                     <thead className="bg-white/5 text-xs uppercase font-semibold text-white">
                         <tr>
-                            <th className="px-6 py-4">User</th>
-                            <th className="px-6 py-4">Status</th>
+                            <th className="px-6 py-4">User & Wallet</th>
+                            <th className="px-6 py-4">Status & Role</th>
                             <th className="px-6 py-4">Joined</th>
                             <th className="px-6 py-4 text-right">Actions</th>
                         </tr>
@@ -33,20 +36,24 @@ export function UsersClient({ users }: { users: User[] }) {
                             <tr key={user.id} className="hover:bg-white/5 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                                            {user.name?.[0] || user.email?.[0] || '?'}
+                                        <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0">
+                                            {user.name?.[0] || user.username?.[0] || user.email?.[0] || '?'}
                                         </div>
-                                        <div>
-                                            <div className="font-medium text-white">{user.name || 'Unknown'}</div>
-                                            <div className="text-xs">{user.email}</div>
-                                            <div className="text-[10px] text-text-secondary font-mono">{user.id}</div>
+                                        <div className="overflow-hidden">
+                                            <div className="font-medium text-white truncate">{user.name || user.username || 'Wallet User'}</div>
+                                            <div className="text-xs truncate">{user.email || '-'}</div>
+                                            {user.address && (
+                                                <div className="text-[10px] font-mono text-primary/80 truncate" title={user.address}>
+                                                    {user.address.slice(0, 4)}...{user.address.slice(-4)}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${user.status === 'suspended'
-                                            ? 'bg-red-500/10 text-red-500'
-                                            : 'bg-green-500/10 text-green-500'
+                                        ? 'bg-red-500/10 text-red-500'
+                                        : 'bg-green-500/10 text-green-500'
                                         }`}>
                                         {user.status === 'suspended' ? <ShieldAlert className="h-3 w-3" /> : <CheckCircle className="h-3 w-3" />}
                                         {user.status || 'Active'}
@@ -92,8 +99,8 @@ function UserActions({ user }: { user: User }) {
                 onClick={handleToggle}
                 disabled={isLoading}
                 className={`p-2 rounded-lg transition-colors ${user.status === 'suspended'
-                        ? 'hover:bg-green-500/20 text-green-500'
-                        : 'hover:bg-yellow-500/20 text-yellow-500'
+                    ? 'hover:bg-green-500/20 text-green-500'
+                    : 'hover:bg-yellow-500/20 text-yellow-500'
                     }`}
                 title={user.status === 'suspended' ? "Activate" : "Suspend"}
             >
