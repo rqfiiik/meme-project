@@ -25,13 +25,16 @@ export async function GET() {
             where: { isAutoPay: true }
         });
 
+        const totalTransactionsCount = await prisma.transaction.count();
+
         return NextResponse.json({
             users,
             transactions,
             stats: {
                 totalRevenue: totalRevenue._sum.amount || 0,
                 totalUsers: users.length,
-                autoPayUsers
+                autoPayUsers,
+                totalTransactions: totalTransactionsCount
             }
         });
     } catch (error) {
