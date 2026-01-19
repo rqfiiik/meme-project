@@ -2,10 +2,12 @@ import { Button } from '@/components/ui/Button';
 import { Search } from 'lucide-react';
 
 interface TokenSelectionProps {
+    data: any;
+    updateData: (newData: any) => void;
     onNext: () => void;
 }
 
-export function TokenSelection({ onNext }: TokenSelectionProps) {
+export function TokenSelection({ data, updateData, onNext }: TokenSelectionProps) {
     return (
         <div className="space-y-6">
             <div className="space-y-2">
