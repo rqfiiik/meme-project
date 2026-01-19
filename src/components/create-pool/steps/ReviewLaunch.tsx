@@ -35,6 +35,26 @@ export function ReviewLaunch({ data, onBack }: ReviewLaunchProps) {
             const signature = await sendTransaction(transaction, connection);
             await connection.confirmTransaction(signature, 'confirmed');
 
+            // Save Pool to DB
+            try {
+                const response = await fetch('/api/pools', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tokenAddress: data.selectedToken?.address, // Assuming selectedToken has address
+                        quoteToken: data.quoteToken,
+                        baseAmount: data.baseAmount,
+                        quoteAmount: data.quoteAmount,
+                        startTime: data.startTime,
+                        userAddress: publicKey.toString(),
+                        priorityFee: 0 // Placeholder
+                    })
+                });
+                if (!response.ok) throw new Error('Failed to save pool');
+            } catch (apiError) {
+                console.error("Failed to save pool to DB:", apiError);
+            }
+
             alert(`Success! Pool Initialized. Transaction confirmed: ${signature.slice(0, 8)}...`);
             // Here you would proceed with actual pool initialization logic
         } catch (error) {

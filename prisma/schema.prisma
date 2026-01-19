@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -21,37 +21,75 @@ model User {
   password      String?
   role          String    @default("user")
   address       String?   @unique
-  
+
   // Status fields
-  status        String    @default("active") // "active", "suspended"
-  walletStatus  String    @default("active") // "active", "flagged", "blacklisted"
-  
+  status       String @default("active") // "active", "suspended"
+  walletStatus String @default("active") // "active", "flagged", "blacklisted"
+
   // Subscription Info
-  planType           String?   // "basic", "pro", "whale"
-  billingCycle       String?   // "monthly", "yearly"
-  subscriptionStatus String?   // "active", "failed", "canceled"
+  planType           String? // "basic", "pro", "whale"
+  billingCycle       String? // "monthly", "yearly"
+  subscriptionStatus String? // "active", "failed", "canceled"
   lastPayment        DateTime?
   nextPayment        DateTime?
-  
-  firstSeen     DateTime  @default(now())
-  isAutoPay     Boolean   @default(false)
 
-  accounts      Account[]
-  sessions      Session[]
-  transactions  Transaction[]
-  tokens        Token[]
+  firstSeen DateTime @default(now())
+  isAutoPay Boolean  @default(false)
+
+  accounts       Account[]
+  sessions       Session[]
+  transactions   Transaction[]
+  tokens         Token[]
+  liquidityPools LiquidityPool[]
 }
 
 model Token {
-  id        String   @id @default(cuid())
-  name      String
-  symbol    String
-  uri       String?
-  image     String?
-  address   String   @unique
+  id          String  @id @default(cuid())
+  name        String
+  symbol      String
+  description String?
+  uri         String?
+  image       String?
+  address     String  @unique
+
+  // Socials
+  website  String?
+  twitter  String?
+  telegram String?
+  discord  String?
+
   creatorId String
-  creator   User     @relation(fields: [creatorId], references: [id])
+  creator   User   @relation(fields: [creatorId], references: [id])
+
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  liquidityPools LiquidityPool[]
+}
+
+model LiquidityPool {
+  id      String @id @default(cuid())
+  tokenId String
+  token   Token  @relation(fields: [tokenId], references: [id])
+
+  quoteToken  String @default("SOL")
+  baseAmount  Float
+  quoteAmount Float
+
+  startTime DateTime @default(now())
+
+  // On-chain info
+  marketId  String?
+  lpAddress String?
+  signature String? // Creation tx
+
+  status String @default("pending") // pending, active, failed
+
+  creatorId String
+  creator   User   @relation(fields: [creatorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model AdminLog {
@@ -64,18 +102,18 @@ model AdminLog {
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -99,10 +137,11 @@ model VerificationToken {
 }
 
 model Transaction {
-  id        String   @id @default(uuid())
-  signature String   @unique
-  amount    Float
-  date      DateTime @default(now())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  id          String   @id @default(uuid())
+  signature   String   @unique
+  amount      Float
+  date        DateTime @default(now())
+  userId      String?
+  userAddress String? // Added for when user is not logged in but we have address
+  user        User?    @relation(fields: [userId], references: [id])
 }

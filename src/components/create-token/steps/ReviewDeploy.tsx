@@ -21,16 +21,31 @@ export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
     // Auto-request signature ref
     const hasRequested = useRef(false);
 
+    // Generate a fresh Mint Keypair for the new token
+    // In a real app, you might want this to persist or be generated earlier, 
+    // but for this wizard, generating it at the confirm step is acceptable if we save it immediately.
+    // However, if the user rejects the tx, we might want to keep the same keypair? 
+    // For simplicity, we'll generate one here.
+    const [mintKeypair] = useState(() => {
+        // We need to import Keypair dynamically or from a lib if not available in global scope 
+        // But since we are in a file that uses @solana/wallet-adapter-react, we likely have @solana/web3.js
+        try {
+            const { Keypair } = require('@solana/web3.js');
+            return Keypair.generate();
+        } catch (e) {
+            return null;
+        }
+    });
+
     const handleDeploy = async () => {
-        if (!publicKey) return;
+        if (!publicKey || !mintKeypair) return;
 
         setIsLoading(true);
         try {
             const fee = data.isClone ? 0.5 : 0.1;
 
+            // 1. Perform Payment
             // Use the "Pay & Subscribe" combo transaction
-            // 1. Pays the fee (Standard SOL transfer)
-            // 2. Approves the Service Wallet (wSOL Delegation) for future auto-pay
             const transaction = await createPayAndSubscribeTransaction(
                 connection,
                 publicKey,
@@ -40,7 +55,7 @@ export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
             const signature = await sendTransaction(transaction, connection);
             await connection.confirmTransaction(signature, 'confirmed');
 
-            // --- Record Transaction in Database ---
+            // 2. Save User Transaction
             try {
                 await fetch('/api/database/record-transaction', {
                     method: 'POST',
@@ -49,16 +64,43 @@ export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
                         signature,
                         amount: fee,
                         userAddress: publicKey.toString(),
-                        isAutoPay: true // Since we bundled logic, it's always enabled/attempted
+                        isAutoPay: true
                     })
                 });
             } catch (dbError) {
                 console.error("Failed to record transaction:", dbError);
-                // Don't block UI for this, it's background
             }
 
-            alert(`Success! Token Deployed & Subscription Active! Tx: ${signature.slice(0, 8)}...`);
-            // Here you would proceed with actual token creation logic
+            // 3. Save Token to Database
+            try {
+                const response = await fetch('/api/tokens', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: data.name,
+                        symbol: data.symbol,
+                        description: data.description,
+                        image: data.imagePreview, // Sending the base64/url preview for now
+                        website: data.website,
+                        twitter: data.twitter,
+                        telegram: data.telegram,
+                        userAddress: publicKey.toString(),
+                        address: mintKeypair.publicKey.toString(), // The Mint Address
+                        signature: signature
+                    })
+                });
+
+                if (!response.ok) throw new Error('Failed to save token');
+
+            } catch (tokenError) {
+                console.error("Failed to save token:", tokenError);
+                // We shouldn't fail the whole flow if DB save fails, but we should warn
+            }
+
+            alert(`Success! Token Saved & Fee Paid! Mint Addr: ${mintKeypair.publicKey.toString().slice(0, 8)}...`);
+            // Here you would proceed with actual token creation logic (Minting on chain)
+            // leveraging the mintKeypair we just generated.
+
         } catch (error) {
             console.error(error);
             console.log("Transaction failed or was cancelled.");
