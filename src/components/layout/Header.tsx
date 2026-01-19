@@ -1,11 +1,17 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { WalletConnectButton } from './WalletButton';
 import { Rocket } from 'lucide-react';
 import Image from 'next/image';
 import { AuthButton } from './AuthButton';
+import { useState } from 'react';
+import { TrendingTokensModal } from '@/components/trending/TrendingTokensModal';
 
 export function Header() {
+    const [isTrendingOpen, setIsTrendingOpen] = useState(false);
+
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container flex h-16 items-center justify-between">
@@ -23,10 +29,13 @@ export function Header() {
                     <Link href="/create-liquidity-pool" className="text-sm font-medium text-text-secondary transition-colors hover:text-white">
                         Manage Liquidity
                     </Link>
-                    <Link href="/copy-trending-tokens" className="flex items-center gap-1.5 text-sm font-medium text-text-secondary transition-colors hover:text-white group">
+                    <button
+                        onClick={() => setIsTrendingOpen(true)}
+                        className="flex items-center gap-1.5 text-sm font-medium text-text-secondary transition-colors hover:text-white group"
+                    >
                         Copy Trending Coins
                         <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold uppercase text-primary transition-colors group-hover:bg-primary group-hover:text-white">New</span>
-                    </Link>
+                    </button>
                 </nav>
 
                 <div className="flex items-center gap-4">
@@ -34,6 +43,7 @@ export function Header() {
                     <WalletConnectButton />
                 </div>
             </div>
+            <TrendingTokensModal isOpen={isTrendingOpen} onClose={() => setIsTrendingOpen(false)} />
         </header >
     );
 }

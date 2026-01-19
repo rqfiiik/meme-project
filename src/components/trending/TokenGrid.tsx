@@ -2,30 +2,34 @@
 
 import { EnrichedTokenProfile, getTrendingTokenProfiles } from '@/lib/dexscreener';
 import { TokenCard } from './TokenCard';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface TokenGridProps {
     initialData: EnrichedTokenProfile[];
+    onRefresh?: () => Promise<void>;
 }
 
-export function TokenGrid({ initialData }: TokenGridProps) {
+export function TokenGrid({ initialData, onRefresh }: TokenGridProps) {
     const [tokens, setTokens] = useState<EnrichedTokenProfile[]>(initialData);
     const [isLoading, setIsLoading] = useState(false);
+
+    // Sync state with props if initialData changes (e.g. parent re-fetches)
+    useEffect(() => {
+        setTokens(initialData);
+    }, [initialData]);
 
     const handleRefresh = async () => {
         setIsLoading(true);
         try {
-            // Re-fetch using a server action or API route would be better, 
-            // but for simplicity calling client-side fetch to same endpoint or effectively reloading
-            // In a real app we'd use TanStack Query or similar.
-            // For now, let's just simulate a refresh or re-call if we had an internal API route.
-            // Since `getTrendingTokenProfiles` is server-side, we can't call it directly easily here without an action.
-            // So we'll validly reload the window or use a Next.js Server Action.
-            // Let's rely on standard window reload for simplicity to ensure full data refresh.
-            window.location.reload();
+            if (onRefresh) {
+                await onRefresh();
+            } else {
+                // Fallback for page-based usage
+                window.location.reload();
+            }
         } catch (error) {
             console.error(error);
         } finally {
