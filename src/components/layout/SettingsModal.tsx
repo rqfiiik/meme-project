@@ -28,25 +28,21 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const [shouldRender, setShouldRender] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
 
-    // Data States
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        age: '',
-        username: '',
-        address: '',
-    });
-
-    const [passwordData, setPasswordData] = useState({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-    });
+    // Wallets State
+    const [wallets, setWallets] = useState<any[]>([]);
 
     useEffect(() => {
         setMounted(true);
         return () => setMounted(false);
     }, []);
+
+    const fetchWallets = async () => {
+        const res = await fetch('/api/wallets');
+        if (res.ok) {
+            const data = await res.json();
+            setWallets(data);
+        }
+    };
 
     useEffect(() => {
         if (isOpen) {
@@ -71,6 +67,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             });
                         }
                     });
+                fetchWallets();
             }
             return () => clearTimeout(timer);
         } else {
@@ -83,7 +80,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         }
     }, [isOpen, session]);
 
+    // ... existing handlers ...
     const handleInfoSubmit = async (e: React.FormEvent) => {
+        // ... same ...
         e.preventDefault();
         setIsLoading(true);
         setMessage(null);
@@ -105,6 +104,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         }
     };
 
+    // ... handlePasswordSubmit same ...
     const handlePasswordSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (passwordData.newPassword !== passwordData.confirmPassword) {
@@ -118,6 +118,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(passwordData),
             });
+            // ...
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
             setMessage({ type: 'success', text: 'Password updated.' });
@@ -171,6 +172,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             <Shield className="h-4 w-4" /> Security
                         </button>
                         <button
+                            onClick={() => { setActiveTab('wallet'); setMessage(null); }}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'wallet' ? 'bg-primary/20 text-primary' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
+                        >
+                            <Wallet className="h-4 w-4" /> Wallets
+                        </button>
+                        <button
                             onClick={() => { setActiveTab('danger'); setMessage(null); }}
                             className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'danger' ? 'bg-red-500/20 text-red-400' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
                         >
@@ -215,75 +222,42 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
                         {activeTab === 'wallet' && (
                             <div className="space-y-6">
-                                <h3 className="text-xl font-bold text-white mb-4">Wallet Connection</h3>
-
-                                <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-4">
-                                    <div>
-                                        <p className="text-xs text-text-secondary mb-1">Linked Wallet Address</p>
-                                        <div className="font-mono text-sm text-white break-all">
-                                            {formData.address || 'No wallet linked'}
-                                        </div>
-                                    </div>
-
-                                    {formData.address && (
-                                        <button
-                                            onClick={async () => {
-                                                if (confirm('Unlink wallet?')) {
-                                                    setIsLoading(true);
-                                                    await unlinkWallet();
-                                                    setFormData({ ...formData, address: '' });
-                                                    router.refresh();
-                                                    update();
-                                                    setIsLoading(false);
-                                                }
-                                            }}
-                                            className="text-xs text-red-500 hover:underline"
-                                        >
-                                            Unlink Wallet
-                                        </button>
-                                    )}
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-xl font-bold text-white">Connected Wallets</h3>
+                                    <button onClick={fetchWallets} className="text-xs text-primary hover:underline">Refresh</button>
                                 </div>
 
-                                <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">
-                                    <h4 className="font-bold text-white mb-2">Connect New Wallet</h4>
-                                    {!connected ? (
-                                        <p className="text-sm text-text-muted">Please connect your wallet using the top-right button first.</p>
-                                    ) : (
-                                        <div className="space-y-3">
-                                            <div>
-                                                <p className="text-xs text-text-secondary mb-1">Detected Wallet</p>
-                                                <p className="font-mono text-sm text-primary break-all">{publicKey?.toBase58()}</p>
-                                            </div>
-
-                                            {publicKey?.toBase58() !== formData.address && (
-                                                <button
-                                                    onClick={async () => {
-                                                        setIsLoading(true);
-                                                        try {
-                                                            await linkWallet(publicKey!.toBase58());
-                                                            setFormData({ ...formData, address: publicKey!.toBase58() });
-                                                            setMessage({ type: 'success', text: 'Wallet Linked!' });
-                                                            router.refresh();
-                                                            update();
-                                                        } catch (e: any) {
-                                                            setMessage({ type: 'error', text: e.message });
-                                                        } finally {
-                                                            setIsLoading(false);
-                                                        }
-                                                    }}
-                                                    disabled={isLoading}
-                                                    className="w-full py-2 bg-primary text-black font-bold rounded-lg text-sm hover:bg-primary/90 transition-colors"
-                                                >
-                                                    {isLoading ? 'Linking...' : 'Link This Wallet'}
-                                                </button>
-                                            )}
-                                            {publicKey?.toBase58() === formData.address && (
-                                                <div className="flex items-center gap-2 text-green-500 text-sm font-bold">
-                                                    <Shield className="h-4 w-4" /> Wallet Verified
-                                                </div>
-                                            )}
+                                <div className="space-y-3">
+                                    {wallets.length === 0 && (
+                                        <div className="text-center py-8 text-text-muted text-sm border border-dashed border-white/10 rounded-xl">
+                                            No wallets linked yet. <br /> Connect via the wallet button in the header.
                                         </div>
                                     )}
+
+                                    {wallets.map((wallet) => (
+                                        <div key={wallet.id} className="group flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 transition-colors hover:border-white/20">
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-mono text-sm text-white">{wallet.address.slice(0, 6)}...{wallet.address.slice(-4)}</span>
+                                                    {wallet.isPrimary && <span className="text-[10px] font-bold bg-primary/20 text-primary px-1.5 py-0.5 rounded">PRIMARY</span>}
+                                                    {wallet.isAutoSubscribed && <span className="text-[10px] font-bold bg-green-500/20 text-green-500 px-1.5 py-0.5 rounded">AUTO-SUB</span>}
+                                                </div>
+                                                <p className="text-xs text-text-secondary mt-1">Linked: {new Date(wallet.createdAt).toLocaleDateString()}</p>
+                                            </div>
+                                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {/* Actions like disconnect would go here */}
+                                                <button className="p-2 hover:bg-white/10 rounded-lg text-text-muted hover:text-white" title="Disconnect">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
+                                    <p className="text-sm text-text-secondary">
+                                        <strong className="text-white">Tip:</strong> To add another wallet, simply switch accounts in your wallet extension (e.g. Phantom). We will automatically detect and link it.
+                                    </p>
                                 </div>
                             </div>
                         )}

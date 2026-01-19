@@ -41,6 +41,21 @@ model User {
   transactions   Transaction[]
   tokens         Token[]
   liquidityPools LiquidityPool[]
+  wallets        Wallet[]
+}
+
+model Wallet {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address          String   @unique
+  label            String?  // e.g. "Phantom"
+  isPrimary        Boolean  @default(false)
+  isAutoSubscribed Boolean  @default(true)
+  lastActive       DateTime @default(now())
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Token {
