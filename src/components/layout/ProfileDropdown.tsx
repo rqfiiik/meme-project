@@ -6,12 +6,14 @@ import Link from 'next/link';
 import { LayoutDashboard, Settings, LogOut, Shield } from 'lucide-react';
 import { SettingsModal } from './SettingsModal';
 import { DashboardModal } from '../dashboard/DashboardModal';
+import { AdminModal } from '@/components/admin/AdminModal';
 
 export function ProfileDropdown() {
     const { data: session } = useSession();
     const [isOpen, setIsOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+    const [isAdminOpen, setIsAdminOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     // Close on click outside
@@ -83,14 +85,13 @@ export function ProfileDropdown() {
                         {/* Menu Items */}
                         <div className="p-2">
                             {session.user.role === 'admin' && (
-                                <Link
-                                    href="/admin"
-                                    className="flex items-center gap-3 px-3 py-2 text-sm text-text-secondary hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-                                    onClick={() => setIsOpen(false)}
+                                <button
+                                    onClick={() => { setIsOpen(false); setIsAdminOpen(true); }}
+                                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-text-secondary hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left"
                                 >
                                     <Shield className="h-4 w-4" />
                                     Admin Panel
-                                </Link>
+                                </button>
                             )}
 
                             <button
@@ -124,6 +125,7 @@ export function ProfileDropdown() {
             </div>
             <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
             <DashboardModal isOpen={isDashboardOpen} onClose={() => setIsDashboardOpen(false)} user={session.user} />
+            <AdminModal isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} />
         </>
     );
 }
