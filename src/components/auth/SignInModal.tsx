@@ -11,9 +11,13 @@ interface SignInModalProps {
     onClose: () => void;
 }
 
+import './SignInModal.css';
+
 export function SignInModal({ isOpen, onClose }: SignInModalProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [shouldRender, setShouldRender] = useState(false);
+    const [isAnimating, setIsAnimating] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -21,9 +25,28 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
         return () => setMounted(false);
     }, []);
 
-    // Prevent scrolling when modal is open
+    // Handle Open/Close Animation States
     useEffect(() => {
         if (isOpen) {
+            setShouldRender(true);
+            // Small delay to ensure render happens before adding 'open' class for transition
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    setIsAnimating(true);
+                });
+            });
+        } else {
+            setIsAnimating(false);
+            const timer = setTimeout(() => {
+                setShouldRender(false);
+            }, 300); // Match CSS transition duration
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen]);
+
+    // Prevent scrolling when modal is open
+    useEffect(() => {
+        if (shouldRender) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
@@ -31,7 +54,7 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [isOpen]);
+    }, [shouldRender]);
 
     // Handle popup message
     useEffect(() => {
@@ -50,18 +73,12 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
     const handleGoogleSignIn = async () => {
         setIsLoading(true);
         try {
-            // Get the auth URL without redirecting immediately
-            // Note: In some versions of next-auth, for OAuth, signIn might still redirect if redirect:false is not fully supported for that provider flow 
-            // OR it returns the url. Let's try to get the URL.
-            // If this fails (i.e. redirects anyway), we might need a workaround. 
-            // But for standard OAuth providers, redirect: false usually returns the url.
             const result = await signIn('google', {
                 redirect: false,
                 callbackUrl: '/auth-popup'
             });
 
             if (result?.url) {
-                // Open popup
                 const width = 500;
                 const height = 600;
                 const left = window.screen.width / 2 - width / 2;
@@ -82,19 +99,19 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
         }
     };
 
-    if (!mounted || !isOpen) return null;
+    if (!mounted || !shouldRender) return null;
 
     // Use Portal to render outside of Header stacking context
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center">
-            {/* Backdrop with blur and darken effect */}
+        <div className={`fixed inset-0 z-[100] flex items-center justify-center modal-overlay ${isAnimating ? 'open' : 'closing'}`}>
+            {/* Backdrop with blur and darken effect - controlled by modal-overlay class now */}
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+                className="absolute inset-0"
                 onClick={onClose}
             />
 
             {/* Modal Content */}
-            <div className="relative z-10 w-full max-w-md scale-100 transform overflow-hidden rounded-2xl bg-[#0a0a0a] border border-white/10 p-6 shadow-2xl transition-all animate-in fade-in zoom-in-95 duration-200">
+            <div className={`relative z-10 w-full max-w-md overflow-hidden rounded-2xl bg-[#0a0a0a] border border-white/10 p-6 shadow-2xl modal-content ${isAnimating ? 'open' : 'closing'}`}>
                 {/* Close Button */}
                 <button
                     onClick={onClose}
