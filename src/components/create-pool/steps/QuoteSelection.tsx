@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 
+// Correct Interface Definition
 interface QuoteSelectionProps {
     data: any;
     updateData: (data: any) => void;
@@ -22,7 +23,8 @@ export function QuoteSelection({ data, updateData, onNext, onBack }: QuoteSelect
                         key={token.symbol}
                         className={cn(
                             "cursor-pointer rounded-xl border-2 border-border bg-background p-4 hover:border-primary/50 transition-all",
-                            data.quoteToken === token.symbol ? 'border-primary bg-primary/5 text-primary' : ''
+                            // Use Optional Chain just in case data is undefined initially (though it shouldn't be)
+                            data?.quoteToken === token.symbol ? 'border-primary bg-primary/5 text-primary' : ''
                         )}
                         onClick={() => updateData({ quoteToken: token.symbol })}
                     >
@@ -44,7 +46,7 @@ export function QuoteSelection({ data, updateData, onNext, onBack }: QuoteSelect
                     Back
                 </Button>
                 <Button className="w-full" onClick={onNext}>
-                    Continue with {data.quoteToken}
+                    Continue with {data?.quoteToken || 'SOL'}
                 </Button>
             </div>
         </div>
