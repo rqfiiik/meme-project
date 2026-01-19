@@ -58,7 +58,7 @@ if (process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_ID !== 'placeholder' &
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-    adapter: PrismaAdapter(prisma),
+    adapter: PrismaAdapter(prisma) as any,
     providers,
     session: {
         strategy: "jwt",
