@@ -19,8 +19,9 @@ export function QuoteSelection({ onNext }: QuoteSelectionProps) {
                         key={token.symbol}
                         className={cn(
                             "cursor-pointer rounded-xl border-2 border-border bg-background p-4 hover:border-primary/50 transition-all",
-                            token.symbol === 'SOL' ? 'border-primary bg-primary/5' : ''
+                            data.quoteToken === token.symbol ? 'border-primary bg-primary/5 text-primary' : ''
                         )}
+                        onClick={() => updateData({ quoteToken: token.symbol })}
                     >
                         <div className="flex items-center gap-3">
                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-lg">
@@ -35,9 +36,14 @@ export function QuoteSelection({ onNext }: QuoteSelectionProps) {
                 ))}
             </div>
 
-            <Button className="w-full" onClick={onNext}>
-                Continue with SOL
-            </Button>
+            <div className="flex gap-4">
+                <Button variant="ghost" className="w-full" onClick={onBack}>
+                    Back
+                </Button>
+                <Button className="w-full" onClick={onNext}>
+                    Continue with {data.quoteToken}
+                </Button>
+            </div>
         </div>
     );
 }
