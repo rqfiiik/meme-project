@@ -27,10 +27,31 @@ export default async function AdminPage() {
     // 3. Total Users
     const totalUsers = await prisma.user.count();
 
-    // 4. Mock Data for now
-    const totalRevenue = 12500.50;
-    const connectedWallets = 42;
-    const failedTx = 3;
+    // 4. Total Revenue (Sum of all transactions)
+    const revenueAgg = await prisma.transaction.aggregate({
+        _sum: { amount: true }
+    });
+    const totalRevenue = revenueAgg._sum.amount || 0;
+
+    // 5. Connected Wallets (Users with address)
+    // Assuming simple count of users for now as we don't have separate wallet table yet
+    // or count users where address is not null
+    const connectedWallets = await prisma.user.count({
+        where: {
+            address: {
+                not: undefined
+            }
+        }
+    });
+
+    // 6. Failed Tx (Placeholder for now as no status field)
+    const failedTx = 0;
+
+    // 7. Recent Transactions
+    const recentTransactions = await prisma.transaction.findMany({
+        take: 5,
+        orderBy: { date: 'desc' }
+    });
 
     return (
         <AdminOverviewClient
@@ -38,6 +59,7 @@ export default async function AdminPage() {
             totalRevenue={totalRevenue}
             connectedWallets={connectedWallets}
             failedTx={failedTx}
+            transactions={recentTransactions}
         />
     );
 }
