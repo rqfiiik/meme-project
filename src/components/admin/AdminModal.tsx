@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Users, TrendingUp, Wallet, CheckCircle, XCircle, AlertTriangle, LayoutDashboard, CreditCard } from 'lucide-react';
+import { X, Users, TrendingUp, Wallet, CheckCircle, LayoutDashboard, CreditCard, FileText } from 'lucide-react';
 import '@/components/auth/SignInModal.css'; // Reusing the same animations
 import { UsersClient } from '@/app/admin/users/UsersClient';
 import { TransactionsClient } from '@/app/admin/transactions/TransactionsClient';
 import { RevenueClient } from '@/app/admin/revenue/RevenueClient';
+import { SubscriptionsClient } from '@/app/admin/subscriptions/SubscriptionsClient';
+import { WalletsClient } from '@/app/admin/wallets/WalletsClient';
+import { LogsClient } from '@/app/admin/logs/LogsClient';
 
 interface AdminModalProps {
     isOpen: boolean;
@@ -24,6 +27,7 @@ export function AdminModal({ isOpen, onClose }: AdminModalProps) {
     const [stats, setStats] = useState<any>(null);
     const [transactions, setTransactions] = useState<any[]>([]);
     const [users, setUsers] = useState<any[]>([]);
+    const [logs, setLogs] = useState<any[]>([]);
     const [revenueStats, setRevenueStats] = useState<any>(null);
 
     useEffect(() => {
@@ -41,6 +45,7 @@ export function AdminModal({ isOpen, onClose }: AdminModalProps) {
                     setStats(data.stats);
                     setTransactions(data.transactions || []);
                     setUsers(data.users || []);
+                    setLogs(data.logs || []);
 
                     // Calculate Revenue Stats Client-side
                     const allTx = data.transactions || [];
@@ -59,7 +64,7 @@ export function AdminModal({ isOpen, onClose }: AdminModalProps) {
                     setRevenueStats({
                         totalRevenue: data.stats?.totalRevenue || 0,
                         revenueToday,
-                        revenueThisMont: revenueThisMonth, // Maintaining typo from RevenueClient if exists
+                        revenueThisMont: revenueThisMonth, // Keep typo to match RevenueClient interface
                         totalTransactions: data.stats?.totalTransactions || allTx.length
                     });
                 })
@@ -106,7 +111,7 @@ export function AdminModal({ isOpen, onClose }: AdminModalProps) {
                 {/* Sidebar */}
                 <div className="w-64 border-r border-white/10 bg-surface/50 p-6 flex flex-col shrink-0">
                     <h2 className="text-xl font-bold text-white mb-8 px-2">Admin Panel</h2>
-                    <nav className="space-y-1 flex-1">
+                    <nav className="space-y-1 flex-1 overflow-y-auto">
                         <button
                             onClick={() => setActiveTab('dashboard')}
                             className={`w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === 'dashboard' ? 'bg-primary/20 text-primary' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
@@ -128,12 +133,35 @@ export function AdminModal({ isOpen, onClose }: AdminModalProps) {
                             <CreditCard className="h-4 w-4" />
                             Transactions
                         </button>
+                        <div className="h-px bg-white/5 my-2 mx-2" />
+                        <button
+                            onClick={() => setActiveTab('subscriptions')}
+                            className={`w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === 'subscriptions' ? 'bg-primary/20 text-primary' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
+                        >
+                            <CheckCircle className="h-4 w-4" />
+                            Subscriptions
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('wallets')}
+                            className={`w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === 'wallets' ? 'bg-primary/20 text-primary' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
+                        >
+                            <Wallet className="h-4 w-4" />
+                            Wallets
+                        </button>
                         <button
                             onClick={() => setActiveTab('revenue')}
                             className={`w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === 'revenue' ? 'bg-primary/20 text-primary' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
                         >
                             <TrendingUp className="h-4 w-4" />
                             Revenue
+                        </button>
+                        <div className="h-px bg-white/5 my-2 mx-2" />
+                        <button
+                            onClick={() => setActiveTab('logs')}
+                            className={`w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === 'logs' ? 'bg-primary/20 text-primary' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
+                        >
+                            <FileText className="h-4 w-4" />
+                            Logs
                         </button>
                     </nav>
 
@@ -222,7 +250,10 @@ export function AdminModal({ isOpen, onClose }: AdminModalProps) {
 
                             {activeTab === 'users' && <UsersClient users={users} />}
                             {activeTab === 'transactions' && <TransactionsClient transactions={transactions} />}
+                            {activeTab === 'subscriptions' && <SubscriptionsClient users={users} />}
+                            {activeTab === 'wallets' && <WalletsClient wallets={users as any[]} />}
                             {activeTab === 'revenue' && revenueStats && <RevenueClient stats={revenueStats} />}
+                            {activeTab === 'logs' && <LogsClient logs={logs} />}
                         </div>
                     )}
                 </div>
