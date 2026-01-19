@@ -2,7 +2,10 @@ import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 
 interface QuoteSelectionProps {
+    data: any;
+    updateData: (data: any) => void;
     onNext: () => void;
+    onBack: () => void;
 }
 
 const QUOTE_TOKENS = [
@@ -10,7 +13,7 @@ const QUOTE_TOKENS = [
     { symbol: 'USDC', name: 'USD Coin', icon: '$' },
 ];
 
-export function QuoteSelection({ onNext }: QuoteSelectionProps) {
+export function QuoteSelection({ data, updateData, onNext, onBack }: QuoteSelectionProps) {
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
