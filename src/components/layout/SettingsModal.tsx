@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { linkWallet, unlinkWallet } from '@/app/actions/user';
 
+import '@/components/auth/SignInModal.css';
+
 interface SettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -23,6 +25,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const [activeTab, setActiveTab] = useState<Tab>('personal');
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [shouldRender, setShouldRender] = useState(false);
+    const [isAnimating, setIsAnimating] = useState(false);
 
     // Data States
     const [formData, setFormData] = useState({
@@ -41,34 +45,43 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
     useEffect(() => {
         setMounted(true);
-        // Load initial data from session or fetch
-        // Ideally we fetch fresh data on open. For now, we rely on session or effect.
-        if (session?.user) {
-            // We might need to fetch extra fields not in session.
-            // Let's do a quick fetch
-            fetch('/api/user/settings/profile') // We need to create this GET route or use existing
-                .then(res => res.json())
-                .then(data => {
-                    if (data.user) {
-                        setFormData({
-                            firstName: data.user.firstName || '',
-                            lastName: data.user.lastName || '',
-                            age: data.user.age || '',
-                            username: data.user.username || '',
-                            address: data.user.address || '',
-                        });
-                    }
-                });
-        }
         return () => setMounted(false);
-    }, [isOpen, session]);
+    }, []);
 
-    // Prevent scrolling
     useEffect(() => {
-        if (isOpen) document.body.style.overflow = 'hidden';
-        else document.body.style.overflow = 'unset';
-        return () => { document.body.style.overflow = 'unset'; };
-    }, [isOpen]);
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            setShouldRender(true);
+            const timer = setTimeout(() => {
+                setIsAnimating(true);
+            }, 50);
+
+            // Fetch Data
+            if (session?.user) {
+                fetch('/api/user/settings/profile')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.user) {
+                            setFormData({
+                                firstName: data.user.firstName || '',
+                                lastName: data.user.lastName || '',
+                                age: data.user.age || '',
+                                username: data.user.username || '',
+                                address: data.user.address || '',
+                            });
+                        }
+                    });
+            }
+            return () => clearTimeout(timer);
+        } else {
+            document.body.style.overflow = 'unset';
+            setIsAnimating(false);
+            const timer = setTimeout(() => {
+                setShouldRender(false);
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, session]);
 
     const handleInfoSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -116,18 +129,18 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         }
     };
 
-    if (!mounted || !isOpen) return null;
+    if (!mounted || !shouldRender) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+        <div className={`fixed inset-0 z-[100] flex items-center justify-center modal-overlay ${isAnimating ? 'open' : 'closing'}`}>
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                className="absolute inset-0"
                 onClick={onClose}
             />
 
             {/* Modal */}
-            <div className="relative z-10 w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className={`relative z-10 w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] modal-content ${isAnimating ? 'open' : 'closing'}`}>
 
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-white/10">
