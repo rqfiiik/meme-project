@@ -30,11 +30,9 @@ function spoofSymbol(symbol: string) {
         .replace(/S/g, '5');
 }
 
-import { ClonePaymentModal } from './ClonePaymentModal';
 import { useState } from 'react';
 
 export function TokenCard({ profile }: TokenCardProps) {
-    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const market = profile.market;
     // Prefer market name, fallback to slice of address
     const name = market?.baseToken?.name || profile.tokenAddress.slice(0, 8);
@@ -126,22 +124,17 @@ export function TokenCard({ profile }: TokenCardProps) {
             </div>
 
             <div className="relative z-10 mt-5 pt-4 border-t border-border/50">
-                <Button
-                    className="w-full gap-2 font-semibold shadow-lg shadow-primary/10 group-hover:shadow-primary/25"
-                    size="sm"
-                    onClick={() => setIsPaymentModalOpen(true)}
-                >
-                    <Copy className="h-4 w-4" />
-                    Clone Information
-                </Button>
+                <Link href={cloneUrl} className="w-full">
+                    <Button
+                        className="w-full gap-2 font-semibold shadow-lg shadow-primary/10 group-hover:shadow-primary/25"
+                        size="sm"
+                    >
+                        <Copy className="h-4 w-4" />
+                        Clone Information
+                    </Button>
+                </Link>
             </div>
-
-            <ClonePaymentModal
-                isOpen={isPaymentModalOpen}
-                onClose={() => setIsPaymentModalOpen(false)}
-                token={profile}
-                targetUrl={cloneUrl}
-            />
         </div>
+
     );
 }
