@@ -33,7 +33,15 @@ const providers: any[] = [
                             image: "https://github.com/shadcn.png"
                         }
                     });
-                    return newAdmin;
+
+                    // Return clean object to avoid Date object serialization issues in NextAuth
+                    return {
+                        id: newAdmin.id,
+                        name: newAdmin.name,
+                        email: newAdmin.email,
+                        image: newAdmin.image,
+                        role: newAdmin.role
+                    };
                 } catch (e) {
                     return null;
                 }
