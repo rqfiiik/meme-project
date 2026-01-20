@@ -12,22 +12,32 @@ export default async function WalletsPage() {
         redirect("/");
     }
 
-    const wallets = await prisma.user.findMany({
-        where: { address: { not: null } },
-        orderBy: { firstSeen: 'desc' },
-        select: {
-            id: true,
-            address: true,
-            name: true,
-            username: true,
-            walletStatus: true,
-            firstSeen: true,
-        }
+    const wallets = await prisma.wallet.findMany({
+        include: {
+            user: {
+                select: {
+                    name: true,
+                    email: true,
+                    image: true
+                }
+            }
+        },
+        orderBy: { connectedAt: 'desc' }
     });
 
+    // Map to client expected shape
     const sanitizedWallets = wallets.map(w => ({
-        ...w,
-        walletStatus: w.walletStatus || 'active'
+        id: w.id,
+        address: w.address,
+        userId: w.userId,
+        userName: w.user.name || 'Unknown',
+        userEmail: w.user.email,
+        userImage: w.user.image,
+        status: w.status,
+        solBalance: w.solBalance,
+        wsolEnabled: w.wsolEnabled,
+        connectedAt: w.connectedAt.toISOString(),
+        label: w.label
     }));
 
     return <WalletsClient wallets={sanitizedWallets} />;

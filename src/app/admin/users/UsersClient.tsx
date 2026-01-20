@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { MoreHorizontal, Shield, ShieldAlert, UserX, CheckCircle } from 'lucide-react';
-import { toggleUserStatus, deleteUser } from '@/app/actions/admin';
+
 
 interface User {
     id: string;
@@ -11,9 +11,13 @@ interface User {
     username: string | null;
     address: string | null;
     role: string;
-    status: string; // "active" | "suspended"
+    status: string;
     planType: string | null;
     firstSeen: Date;
+    _count: {
+        wallets: number;
+        subscriptions: number;
+    };
 }
 
 export function UsersClient({ users }: { users: User[] }) {
@@ -25,7 +29,8 @@ export function UsersClient({ users }: { users: User[] }) {
                 <table className="w-full text-left text-sm text-text-muted">
                     <thead className="bg-white/5 text-xs uppercase font-semibold text-white">
                         <tr>
-                            <th className="px-6 py-4">User & Wallet</th>
+                            <th className="px-6 py-4">User</th>
+                            <th className="px-6 py-4">Linked</th>
                             <th className="px-6 py-4">Status & Role</th>
                             <th className="px-6 py-4">Joined</th>
                             <th className="px-6 py-4 text-right">Actions</th>
@@ -42,12 +47,17 @@ export function UsersClient({ users }: { users: User[] }) {
                                         <div className="overflow-hidden">
                                             <div className="font-medium text-white truncate">{user.name || user.username || 'Wallet User'}</div>
                                             <div className="text-xs truncate">{user.email || '-'}</div>
-                                            {user.address && (
-                                                <div className="text-[10px] font-mono text-primary/80 truncate" title={user.address}>
-                                                    {user.address.slice(0, 4)}...{user.address.slice(-4)}
-                                                </div>
-                                            )}
                                         </div>
+                                    </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-xs text-white bg-white/5 px-2 py-0.5 rounded w-fit">
+                                            💳 {user._count.wallets} Wallets
+                                        </span>
+                                        <span className="text-xs text-white bg-white/5 px-2 py-0.5 rounded w-fit">
+                                            ✨ {user._count.subscriptions} Subs
+                                        </span>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
@@ -57,7 +67,7 @@ export function UsersClient({ users }: { users: User[] }) {
                                             : 'bg-green-500/10 text-green-500'
                                             }`}>
                                             {user.status === 'suspended' ? <ShieldAlert className="h-3 w-3" /> : <CheckCircle className="h-3 w-3" />}
-                                            {user.status || 'Active'}
+                                            {user.status || 'active'}
                                         </span>
                                         <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-white/10 text-text-secondary uppercase">
                                             {user.role}
@@ -82,40 +92,42 @@ export function UsersClient({ users }: { users: User[] }) {
 function UserActions({ user }: { user: User }) {
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleToggle = async () => {
-        if (confirm(`Are you sure you want to ${user.status === 'suspended' ? 'activate' : 'suspend'} this user?`)) {
-            setIsLoading(true);
-            await toggleUserStatus(user.id, user.status || 'active');
+    const handleAction = async (action: 'flag' | 'ban' | 'activate') => {
+        if (!confirm(`Are you sure you want to ${action} this user?`)) return;
+        setIsLoading(true);
+        try {
+            await fetch('/api/admin/user-action', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user.id, action })
+            });
+            window.location.reload();
+        } catch (error) {
+            console.error(error);
+            alert("Action failed");
+        } finally {
             setIsLoading(false);
         }
     };
 
-    const handleDelete = async () => {
-        if (confirm(`Are you sure you want to DELETE this user? This cannot be undone.`)) {
-            setIsLoading(true);
-            await deleteUser(user.id);
-            setIsLoading(false);
-        }
-    }
-
     return (
         <div className="flex justify-end gap-2">
             <button
-                onClick={handleToggle}
+                onClick={() => handleAction(user.status === 'suspended' ? 'activate' : 'flag')}
                 disabled={isLoading}
                 className={`p-2 rounded-lg transition-colors ${user.status === 'suspended'
                     ? 'hover:bg-green-500/20 text-green-500'
                     : 'hover:bg-yellow-500/20 text-yellow-500'
                     }`}
-                title={user.status === 'suspended' ? "Activate" : "Suspend"}
+                title={user.status === 'suspended' ? "Activate" : "Flag"}
             >
                 <Shield className="h-4 w-4" />
             </button>
             <button
-                onClick={handleDelete}
+                onClick={() => handleAction('ban')}
                 disabled={isLoading}
                 className="p-2 rounded-lg hover:bg-red-500/20 text-red-500 transition-colors"
-                title="Delete User"
+                title="Ban User"
             >
                 <UserX className="h-4 w-4" />
             </button>

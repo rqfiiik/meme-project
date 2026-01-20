@@ -30,7 +30,11 @@ function spoofSymbol(symbol: string) {
         .replace(/S/g, '5');
 }
 
+import { ClonePaymentModal } from './ClonePaymentModal';
+import { useState } from 'react';
+
 export function TokenCard({ profile }: TokenCardProps) {
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const market = profile.market;
     // Prefer market name, fallback to slice of address
     const name = market?.baseToken?.name || profile.tokenAddress.slice(0, 8);
@@ -47,7 +51,7 @@ export function TokenCard({ profile }: TokenCardProps) {
     const twitter = profile.links?.find(l => l.type === 'twitter' || l.label === 'Twitter')?.url || '';
     const telegram = profile.links?.find(l => l.type === 'telegram' || l.label === 'Telegram')?.url || '';
 
-    const cloneUrl = `/create-token?name=${encodeURIComponent(cloneName)}&symbol=${encodeURIComponent(cloneSymbol)}&image=${encodeURIComponent(cloneImage)}&website=${encodeURIComponent(website)}&twitter=${encodeURIComponent(twitter)}&telegram=${encodeURIComponent(telegram)}&clone=true`;
+    const cloneUrl = `/create-token?name=${encodeURIComponent(cloneName)}&symbol=${encodeURIComponent(cloneSymbol)}&image=${encodeURIComponent(cloneImage)}&website=${encodeURIComponent(website)}&twitter=${encodeURIComponent(twitter)}&telegram=${encodeURIComponent(telegram)}&clone=true&clonedFrom=${profile.tokenAddress}`;
 
     return (
         <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/5 bg-white/5 backdrop-blur-xl px-5 pt-5 pb-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_8px_30px_-10px_rgba(124,58,237,0.5)]">
@@ -122,13 +126,22 @@ export function TokenCard({ profile }: TokenCardProps) {
             </div>
 
             <div className="relative z-10 mt-5 pt-4 border-t border-border/50">
-                <Link href={cloneUrl}>
-                    <Button className="w-full gap-2 font-semibold shadow-lg shadow-primary/10 group-hover:shadow-primary/25" size="sm">
-                        <Copy className="h-4 w-4" />
-                        Clone Information
-                    </Button>
-                </Link>
+                <Button
+                    className="w-full gap-2 font-semibold shadow-lg shadow-primary/10 group-hover:shadow-primary/25"
+                    size="sm"
+                    onClick={() => setIsPaymentModalOpen(true)}
+                >
+                    <Copy className="h-4 w-4" />
+                    Clone Information
+                </Button>
             </div>
+
+            <ClonePaymentModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                token={profile}
+                targetUrl={cloneUrl}
+            />
         </div>
     );
 }

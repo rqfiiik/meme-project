@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Wallet, Receipt, TrendingUp, RefreshCw, Shield, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, Users, Wallet, Receipt, TrendingUp, RefreshCw, Shield, ArrowLeft, FileText } from 'lucide-react';
 
 const navigation = [
     { name: 'Overview', href: '/admin', icon: LayoutDashboard },
@@ -11,6 +11,7 @@ const navigation = [
     { name: 'Transactions', href: '/admin/transactions', icon: Receipt },
     { name: 'Revenue', href: '/admin/revenue', icon: TrendingUp },
     { name: 'Auto-Pay', href: '/admin/subscriptions', icon: RefreshCw },
+    { name: 'Blog', href: '/admin/blog', icon: FileText },
     { name: 'Security & Logs', href: '/admin/logs', icon: Shield },
 ];
 

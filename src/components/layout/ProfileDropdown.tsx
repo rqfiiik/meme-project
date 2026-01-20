@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { LayoutDashboard, Settings, LogOut, Shield } from 'lucide-react';
@@ -10,6 +11,7 @@ import { AdminModal } from '@/components/admin/AdminModal';
 
 export function ProfileDropdown() {
     const { data: session } = useSession();
+    const { disconnect } = useWallet();
     const [isOpen, setIsOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isDashboardOpen, setIsDashboardOpen] = useState(false);
@@ -113,7 +115,10 @@ export function ProfileDropdown() {
                             <div className="h-px bg-white/5 my-1" />
 
                             <button
-                                onClick={() => signOut({ callbackUrl: '/' })}
+                                onClick={async () => {
+                                    await disconnect();
+                                    signOut({ callbackUrl: '/' });
+                                }}
                                 className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors text-left"
                             >
                                 <LogOut className="h-4 w-4" />

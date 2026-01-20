@@ -44,13 +44,25 @@ export default async function AdminPage() {
         }
     });
 
-    // 6. Failed Tx (Placeholder for now as no status field)
-    const failedTx = 0;
+    // 6. Active Subscriptions
+    const activeSubscriptions = await prisma.subscription.count({
+        where: { status: "active" }
+    });
 
-    // 7. Recent Transactions
+    // 7. WSOL Auto-Pay Users
+    const autoPayUsers = await prisma.user.count({
+        where: { isAutoPay: true }
+    });
+
+    // 8. Recent Transactions
     const recentTransactions = await prisma.transaction.findMany({
         take: 5,
-        orderBy: { date: 'desc' }
+        orderBy: { date: 'desc' },
+        include: {
+            user: {
+                select: { name: true, email: true }
+            }
+        }
     });
 
     return (
@@ -58,7 +70,8 @@ export default async function AdminPage() {
             totalUsers={totalUsers}
             totalRevenue={totalRevenue}
             connectedWallets={connectedWallets}
-            failedTx={failedTx}
+            activeSubscriptions={activeSubscriptions}
+            autoPayUsers={autoPayUsers}
             transactions={recentTransactions}
         />
     );

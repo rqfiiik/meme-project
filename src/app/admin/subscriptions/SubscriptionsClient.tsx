@@ -1,164 +1,114 @@
 'use client';
 
 import { useState } from 'react';
-import { RefreshCw, CheckCircle, XCircle, CreditCard } from 'lucide-react';
-import { requestAutoPayment } from '@/app/actions/admin';
-import { useRouter } from 'next/navigation';
+import { RefreshCw, CreditCard, AlertCircle, CheckCircle } from 'lucide-react';
 
-interface SubUser {
+interface Subscription {
     id: string;
-    email: string | null;
-    name: string | null;
-    isAutoPay: boolean;
-    planType: string | null;
-    subscriptionStatus: string | null;
-    lastPayment: Date | null;
-    nextPayment: Date | null;
+    userId: string;
+    userName: string;
+    userEmail: string | null;
+    walletAddress: string;
+    planType: string;
+    status: string;
+    lastPayment: string | null;
+    nextPayment: string | null;
+    createdAt: string;
 }
 
-export function SubscriptionsClient({ users }: { users: SubUser[] }) {
+export function SubscriptionsClient({ subscriptions }: { subscriptions: Subscription[] }) {
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-white">Auto-Pay Manager</h1>
+            <h1 className="text-3xl font-bold text-white">Subscription Manager</h1>
 
             <div className="rounded-2xl bg-[#0a0a0a] border border-white/10 overflow-hidden">
                 <table className="w-full text-left text-sm text-text-muted">
                     <thead className="bg-white/5 text-xs uppercase font-semibold text-white">
                         <tr>
                             <th className="px-6 py-4">User</th>
+                            <th className="px-6 py-4">Wallet</th>
                             <th className="px-6 py-4">Plan</th>
                             <th className="px-6 py-4">Status</th>
-                            <th className="px-6 py-4">Last Payment</th>
-                            <th className="px-6 py-4">Next Payment</th>
+                            <th className="px-6 py-4">Billing Cycle</th>
                             <th className="px-6 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
-                        {users.map((user) => (
-                            <tr key={user.id} className="hover:bg-white/5 transition-colors">
+                        {subscriptions.map((sub) => (
+                            <tr key={sub.id} className="hover:bg-white/5 transition-colors">
                                 <td className="px-6 py-4">
-                                    <div className="font-medium text-white">{user.name || 'Unknown'}</div>
-                                    <div className="text-xs">{user.email}</div>
+                                    <div className="font-medium text-white">{sub.userName}</div>
+                                    <div className="text-xs text-text-muted">{sub.userEmail}</div>
+                                </td>
+                                <td className="px-6 py-4 font-mono text-xs text-text-secondary truncate max-w-[150px]">
+                                    {sub.walletAddress}
+                                </td>
+                                <td className="px-6 py-4 capitalize text-white">
+                                    {sub.planType} Plan
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 text-xs font-bold uppercase text-white">
-                                        {user.planType || 'Basic'}
+                                    <StatusBadge status={sub.status} />
+                                </td>
+                                <td className="px-6 py-4 text-xs">
+                                    <div className="flex flex-col">
+                                        <span>Next: {sub.nextPayment ? new Date(sub.nextPayment).toLocaleDateString() : 'N/A'}</span>
+                                        <span className="text-text-muted">Last: {sub.lastPayment ? new Date(sub.lastPayment).toLocaleDateString() : 'Never'}</span>
                                     </div>
                                 </td>
-                                <td className="px-6 py-4">
-                                    <StatusBadge status={user.subscriptionStatus} isAutoPay={user.isAutoPay} />
-                                </td>
-                                <td className="px-6 py-4">
-                                    {user.lastPayment ? new Date(user.lastPayment).toLocaleDateString() : 'Never'}
-                                </td>
-                                <td className="px-6 py-4">
-                                    {user.nextPayment ? new Date(user.nextPayment).toLocaleDateString() : '-'}
-                                </td>
-                                <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
-                                    {user.isAutoPay && <AutoPayAction user={user} />}
-                                    {user.subscriptionStatus === 'active' && <CancelAction user={user} />}
+                                <td className="px-6 py-4 text-right">
+                                    <SubscriptionActions subscription={sub} />
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
+                {subscriptions.length === 0 && (
+                    <div className="p-8 text-center text-text-muted">No active subscriptions found.</div>
+                )}
             </div>
         </div>
     );
 }
 
-function StatusBadge({ status, isAutoPay }: { status: string | null, isAutoPay: boolean }) {
-    if (!isAutoPay) return <span className="text-text-muted italic">Disabled</span>;
-
-    if (status === 'active') {
-        return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-500">
-                <CheckCircle className="h-3 w-3" /> Active
-            </span>
-        );
-    }
+function StatusBadge({ status }: { status: string }) {
+    const isActive = status === 'active';
     return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-500">
-            <RefreshCw className="h-3 w-3" /> PENDING
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${isActive ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+            {isActive ? <CheckCircle className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
+            <span className="capitalize">{status}</span>
         </span>
     );
 }
 
-function AutoPayAction({ user }: { user: SubUser }) {
+function SubscriptionActions({ subscription }: { subscription: Subscription }) {
     const [isLoading, setIsLoading] = useState(false);
-    const router = useRouter();
 
-    const handleRequest = async () => {
-        const amountStr = prompt(`Enter amount (SOL) to request from ${user.email}:`, "0.5");
-        if (!amountStr) return;
-
-        const amount = parseFloat(amountStr);
-        if (isNaN(amount) || amount <= 0) {
-            alert("Invalid amount");
-            return;
-        }
-
-        if (!confirm(`CONFIRM: Request ${amount} SOL Auto-Payment from ${user.email}?\n\nThis will trigger a blockchain transaction request.`)) {
-            return;
-        }
-
+    const handleManualCharge = async () => {
+        if (!confirm(`Attempt manual charge using connected wallet?`)) return;
         setIsLoading(true);
-        try {
-            await requestAutoPayment(user.id, amount);
-            alert("Payment Requested Successfully! (Simulated)");
-            router.refresh();
-        } catch (error) {
-            console.error(error);
-            alert("Failed to request payment");
-        } finally {
-            setIsLoading(false);
-        }
+        // Placeholder for future manual charge logic calling an API
+        await new Promise(r => setTimeout(r, 1000));
+        alert("Charge request sent (Simulation)");
+        setIsLoading(false);
     };
 
     return (
-        <button
-            onClick={handleRequest}
-            disabled={isLoading}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-black text-xs font-bold transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
-        >
-            {isLoading ? <RefreshCw className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />}
-            {isLoading ? 'Processing...' : 'Request Payment'}
-        </button>
-    );
-}
-
-function CancelAction({ user }: { user: SubUser }) {
-    const [isLoading, setIsLoading] = useState(false);
-    const router = useRouter();
-
-    const handleCancel = async () => {
-        if (!confirm(`CONFIRM: Cancel subscription for ${user.email}?\n\nThis will stop auto-pay.`)) {
-            return;
-        }
-
-        setIsLoading(true);
-        try {
-            // Dynamically import to avoid circular dep if needed, or just import at top
-            const { cancelSubscription } = await import('@/app/actions/admin');
-            await cancelSubscription(user.id);
-            alert("Subscription Canceled.");
-            router.refresh();
-        } catch (error) {
-            console.error(error);
-            alert("Failed to cancel subscription");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    return (
-        <button
-            onClick={handleCancel}
-            disabled={isLoading}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-bold transition-all border border-red-500/20 disabled:opacity-50"
-        >
-            {isLoading ? <RefreshCw className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3" />}
-            {isLoading ? 'Canceling...' : 'Cancel'}
-        </button>
+        <div className="flex justify-end gap-2">
+            <button
+                onClick={handleManualCharge}
+                disabled={isLoading || subscription.status !== 'active'}
+                className="p-1.5 rounded bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 disabled:opacity-50"
+                title="Attempt Auto-Pay Now"
+            >
+                <RefreshCw className="h-4 w-4" />
+            </button>
+            <button
+                disabled
+                className="p-1.5 rounded bg-white/5 text-text-muted cursor-not-allowed"
+                title="Manage Card (Unavailable)"
+            >
+                <CreditCard className="h-4 w-4" />
+            </button>
+        </div>
     );
 }

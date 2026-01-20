@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { WalletContextProvider } from '@/components/providers/WalletContextProvider';
 import { NextAuthProvider } from '@/components/providers/NextAuthProvider';
+import { AuthWrapper } from '@/components/auth/AuthWrapper';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,7 +23,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <NextAuthProvider>
           <WalletContextProvider>
-            {children}
+            <AuthWrapper>
+              {children}
+            </AuthWrapper>
             <Analytics />
           </WalletContextProvider>
         </NextAuthProvider>

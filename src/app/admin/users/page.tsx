@@ -25,6 +25,12 @@ export default async function UsersPage() {
             role: true,
             status: true,
             firstSeen: true,
+            _count: {
+                select: {
+                    wallets: true,
+                    subscriptions: true
+                }
+            }
         }
     });
 

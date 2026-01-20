@@ -1,49 +1,64 @@
 'use client';
 
-import { Users, TrendingUp, Wallet, AlertTriangle } from 'lucide-react';
+import { Users, TrendingUp, Wallet, AlertTriangle, RefreshCw, Shield } from 'lucide-react';
 
 interface AdminOverviewClientProps {
     totalUsers: number;
     totalRevenue: number;
     connectedWallets: number;
-    failedTx: number;
-    transactions?: any[]; // Added transactions prop
+    activeSubscriptions: number;
+    autoPayUsers: number;
+    transactions?: any[];
 }
 
-export function AdminOverviewClient({ totalUsers, totalRevenue, connectedWallets, failedTx, transactions = [] }: AdminOverviewClientProps) {
+export function AdminOverviewClient({
+    totalUsers,
+    totalRevenue,
+    connectedWallets,
+    activeSubscriptions,
+    autoPayUsers,
+    transactions = []
+}: AdminOverviewClientProps) {
     return (
         <div className="space-y-8">
             <h1 className="text-3xl font-bold text-white">Dashboard Overview</h1>
 
             {/* Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                 <StatCard
                     title="Total Users"
                     value={totalUsers.toString()}
-                    change="+12% from last week"
+                    change="Platform users"
                     icon={Users}
                     color="text-blue-400"
                 />
                 <StatCard
                     title="Total Revenue"
                     value={`$${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                    change="+5.2% today"
+                    change="SOL collected"
                     icon={TrendingUp}
                     color="text-green-400"
                 />
                 <StatCard
                     title="Connected Wallets"
                     value={connectedWallets.toString()}
-                    change="+3 new today"
+                    change="Linked addresses"
                     icon={Wallet}
                     color="text-purple-400"
                 />
                 <StatCard
-                    title="Failed Transactions"
-                    value={failedTx.toString()}
-                    change="Needs attention"
-                    icon={AlertTriangle}
-                    color="text-red-400"
+                    title="Active Subs"
+                    value={activeSubscriptions.toString()}
+                    change="Recurring plans"
+                    icon={RefreshCw}
+                    color="text-yellow-400"
+                />
+                <StatCard
+                    title="Auto-Pay Users"
+                    value={autoPayUsers.toString()}
+                    change="WSOL enabled"
+                    icon={Shield}
+                    color="text-orange-400"
                 />
             </div>
 

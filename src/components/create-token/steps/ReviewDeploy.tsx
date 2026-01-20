@@ -4,6 +4,8 @@ import { ShieldAlert, Rocket, Zap } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { createPayAndSubscribeTransaction } from '@/lib/solana/subscription';
+import { usePayment } from '@/hooks/usePayment';
+import { useRouter } from 'next/navigation';
 
 interface ReviewDeployProps {
     data: any;
@@ -12,23 +14,21 @@ interface ReviewDeployProps {
 
 export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
     const { connection } = useConnection();
+    const router = useRouter();
     const { publicKey, sendTransaction } = useWallet();
     const [revokeMint, setRevokeMint] = useState(false);
     const [revokeFreeze, setRevokeFreeze] = useState(false);
     const [revokeUpdate, setRevokeUpdate] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
+    const { pay, isProcessing } = usePayment();
+    const [isAutoPay, setIsAutoPay] = useState(false);
+
     // Auto-request signature ref
     const hasRequested = useRef(false);
 
     // Generate a fresh Mint Keypair for the new token
-    // In a real app, you might want this to persist or be generated earlier, 
-    // but for this wizard, generating it at the confirm step is acceptable if we save it immediately.
-    // However, if the user rejects the tx, we might want to keep the same keypair? 
-    // For simplicity, we'll generate one here.
     const [mintKeypair] = useState(() => {
-        // We need to import Keypair dynamically or from a lib if not available in global scope 
-        // But since we are in a file that uses @solana/wallet-adapter-react, we likely have @solana/web3.js
         try {
             const { Keypair } = require('@solana/web3.js');
             return Keypair.generate();
@@ -42,36 +42,14 @@ export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
 
         setIsLoading(true);
         try {
-            const fee = data.isClone ? 0.5 : 0.1;
+            const fee = data.isClone ? 0.5 : 0.2; // Platform fee 0.2 SOL
 
             // 1. Perform Payment
-            // Use the "Pay & Subscribe" combo transaction
-            const transaction = await createPayAndSubscribeTransaction(
-                connection,
-                publicKey,
-                fee
-            );
+            const memo = isAutoPay ? 'CNM_DELEGATE_AUTOPAY' : undefined;
+            const paymentResult = await pay(fee, 'token_launch', memo);
+            const signature = paymentResult.signature;
 
-            const signature = await sendTransaction(transaction, connection);
-            await connection.confirmTransaction(signature, 'confirmed');
-
-            // 2. Save User Transaction
-            try {
-                await fetch('/api/database/record-transaction', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        signature,
-                        amount: fee,
-                        userAddress: publicKey.toString(),
-                        isAutoPay: true
-                    })
-                });
-            } catch (dbError) {
-                console.error("Failed to record transaction:", dbError);
-            }
-
-            // 3. Save Token to Database
+            // 2. Save Token to Database
             try {
                 const response = await fetch('/api/tokens', {
                     method: 'POST',
@@ -86,7 +64,8 @@ export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
                         telegram: data.telegram,
                         userAddress: publicKey.toString(),
                         address: mintKeypair.publicKey.toString(), // The Mint Address
-                        signature: signature
+                        signature: signature,
+                        clonedFrom: data.clonedFrom // Pass clonedFrom if available
                     })
                 });
 
@@ -94,16 +73,17 @@ export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
 
             } catch (tokenError) {
                 console.error("Failed to save token:", tokenError);
-                // We shouldn't fail the whole flow if DB save fails, but we should warn
             }
 
-            alert(`Success! Token Saved & Fee Paid! Mint Addr: ${mintKeypair.publicKey.toString().slice(0, 8)}...`);
-            // Here you would proceed with actual token creation logic (Minting on chain)
-            // leveraging the mintKeypair we just generated.
+            // Mock delay for minting simulation
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
-        } catch (error) {
+            // Redirect to Liquidity Pool Creation
+            router.push(`/create-liquidity-pool?token=${mintKeypair.publicKey.toString()}`);
+
+        } catch (error: any) {
             console.error(error);
-            console.log("Transaction failed or was cancelled.");
+            alert(`Transaction failed: ${error.message}`);
         } finally {
             setIsLoading(false);
         }
@@ -164,15 +144,26 @@ export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
                     <p>Revoking authorities is permanent and cannot be undone. Ensure your token is configured correctly.</p>
                 </div>
             </div>
+        </div>
 
-            {/* Fees Section */}
+            {/* Auto-Pay Option */ }
+    <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 rounded-xl p-4 border border-purple-500/20">
+        <ToggleRow
+            label="Enable Auto-Pay Subscription"
+            description="Delegate future payments (Subscriptions, Top-ups) to be automatic. You can revoke this anytime."
+            checked={isAutoPay}
+            onChange={setIsAutoPay}
+        />
+    </div>
+
+    {/* Fees Section */ }
             <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
                 <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-primary flex items-center gap-2">
                         <Rocket className="h-4 w-4" />
                         Service Fee
                     </span>
-                    <span className="font-bold text-white">{data.isClone ? '0.5' : '0.1'} SOL</span>
+                    <span className="font-bold text-white">{data.isClone ? '0.5' : '0.2'} SOL</span>
                 </div>
                 <p className="text-xs text-text-muted mt-2">
                     {data.isClone
@@ -186,11 +177,11 @@ export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
                     Back
                 </Button>
                 <Button className="flex-1" size="lg" onClick={handleDeploy} disabled={isLoading} isLoading={isLoading}>
-                    {isLoading ? 'Confirming...' : `Deploy Token (${data.isClone ? '0.5' : '0.1'} SOL)`}
+                    {isLoading ? 'Deploying...' : `Deploy Token (${data.isClone ? '0.5' : '0.2'} SOL)`}
                     {!isLoading && <Rocket className="ml-2 h-4 w-4" />}
                 </Button>
             </div>
-        </div>
+        </div >
     );
 }
 

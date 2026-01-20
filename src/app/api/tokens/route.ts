@@ -14,6 +14,7 @@ export async function POST(req: Request) {
             telegram,
             discord,
             userAddress,
+            clonedFrom, // Add clonedFrom
             signature
         } = body;
 
@@ -51,7 +52,8 @@ export async function POST(req: Request) {
                 twitter,
                 telegram,
                 discord,
-                creatorId: user.id
+                creatorId: user.id,
+                clonedFrom: body.clonedFrom // Add clonedFrom
             },
         });
 

@@ -15,10 +15,27 @@ export async function POST(req: Request) {
             return new NextResponse("Address required", { status: 400 });
         }
 
-        // Update user with wallet address
+        // Update user with wallet address (Primary)
         await prisma.user.update({
             where: { id: session.user.id },
             data: { address: address }
+        });
+
+        // Upsert Wallet record for multi-wallet support
+        await prisma.wallet.upsert({
+            where: { address: address },
+            update: {
+                userId: session.user.id,
+                lastSeenAt: new Date(),
+                status: 'active'
+            },
+            create: {
+                userId: session.user.id,
+                address: address,
+                label: 'Phantom', // Default label
+                status: 'active',
+                isPrimary: true // Default to primary if it's the one being synced
+            }
         });
 
         return NextResponse.json({ success: true });

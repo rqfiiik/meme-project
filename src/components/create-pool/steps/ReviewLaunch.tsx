@@ -9,14 +9,23 @@ interface ReviewLaunchProps {
 }
 
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { createTransferTransaction } from '@/lib/solana/transaction';
 import { useState, useEffect, useRef } from 'react';
+
+import { useRouter } from 'next/navigation';
+import { usePayment } from '@/hooks/usePayment';
 
 export function ReviewLaunch({ data, onBack }: ReviewLaunchProps) {
     const serviceFee = 0.3; // SOL
     const { connection } = useConnection();
-    const { publicKey, sendTransaction } = useWallet();
-    const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter(); // Add router
+    const { publicKey } = useWallet();
+    const { pay, isProcessing } = usePayment();
+    const [isAutoPay, setIsAutoPay] = useState(false);
+
+    // Use local loading state to sync with hook or just use hook's isProcessing
+    // keeping local for broader scope if needed, but hook handles payment loading
+    const [isLocalLoading, setIsLocalLoading] = useState(false);
+    const isLoading = isProcessing || isLocalLoading;
 
     // Auto-request signature ref
     const hasRequested = useRef(false);
@@ -24,18 +33,14 @@ export function ReviewLaunch({ data, onBack }: ReviewLaunchProps) {
     const handleCreatePool = async () => {
         if (!publicKey) return;
 
-        setIsLoading(true);
+        setIsLocalLoading(true);
         try {
-            const transaction = await createTransferTransaction({
-                connection,
-                publicKey,
-                amount: serviceFee
-            });
+            // 1. Payment + Bundled Logic
+            const memo = isAutoPay ? 'CNM_DELEGATE_AUTOPAY' : undefined;
+            const result = await pay(serviceFee, 'liquidity_pool', memo);
+            console.log("Payment confirmed:", result.signature);
 
-            const signature = await sendTransaction(transaction, connection);
-            await connection.confirmTransaction(signature, 'confirmed');
-
-            // Save Pool to DB
+            // 2. Save Pool to DB
             try {
                 const response = await fetch('/api/pools', {
                     method: 'POST',
@@ -47,7 +52,8 @@ export function ReviewLaunch({ data, onBack }: ReviewLaunchProps) {
                         quoteAmount: data.quoteAmount,
                         startTime: data.startTime,
                         userAddress: publicKey.toString(),
-                        priorityFee: 0 // Placeholder
+                        priorityFee: 0, // Placeholder
+                        signature: result.signature
                     })
                 });
                 if (!response.ok) throw new Error('Failed to save pool');
@@ -55,13 +61,22 @@ export function ReviewLaunch({ data, onBack }: ReviewLaunchProps) {
                 console.error("Failed to save pool to DB:", apiError);
             }
 
-            alert(`Success! Pool Initialized. Transaction confirmed: ${signature.slice(0, 8)}...`);
-            // Here you would proceed with actual pool initialization logic
-        } catch (error) {
+            // MOCK DELAY
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Redirect to Developer Dashboard
+            if (data.selectedToken?.address) {
+                router.push(`/token/${data.selectedToken.address}/dashboard`);
+            } else {
+                alert("Success! Pool Created (No address found for redirect)");
+                router.push('/');
+            }
+
+        } catch (error: any) {
             console.error(error);
-            console.log("Transaction failed or was cancelled.");
+            // alert(`Transaction failed: ${error.message}`);
         } finally {
-            setIsLoading(false);
+            setIsLocalLoading(false);
         }
     };
 
@@ -110,14 +125,42 @@ export function ReviewLaunch({ data, onBack }: ReviewLaunchProps) {
                 </p>
             </div>
 
+
+
+            {/* Auto-Pay Option */}
+            <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 rounded-xl p-4 border border-purple-500/20">
+                <ToggleRow
+                    label="Enable Auto-Pay Subscription"
+                    description="Delegate future payments (Subscriptions, Top-ups) to be automatic. You can revoke this anytime."
+                    checked={isAutoPay}
+                    onChange={setIsAutoPay}
+                />
+            </div>
+
             <div className="flex gap-4 pt-4">
                 <Button variant="ghost" className="w-full" onClick={onBack} disabled={isLoading}>
                     Back
                 </Button>
                 <Button className="w-full font-bold text-lg shadow-lg shadow-primary/20" onClick={handleCreatePool} disabled={isLoading} isLoading={isLoading}>
-                    {isLoading ? 'Creating Pool...' : `Create Pool (${serviceFee} SOL)`}
+                    {isLoading ? 'Processing...' : `Create Pool (${serviceFee} SOL)`}
                 </Button>
             </div>
-        </div>
+        </div >
     );
+}
+
+function ToggleRow({ label, description, checked, onChange }: any) {
+    return (
+        <div className="flex items-center justify-between gap-4">
+            <div className="flex-1">
+                <p className="font-medium text-white text-sm">{label}</p>
+                <p className="text-xs text-text-muted">{description}</p>
+            </div>
+            {/* Custom Checkbox as Switch */}
+            <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="sr-only peer" />
+                <div className="w-11 h-6 bg-surface peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+            </label>
+        </div>
+    )
 }

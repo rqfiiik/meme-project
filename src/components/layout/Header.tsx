@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { AuthButton } from './AuthButton';
 import { useState } from 'react';
 import { WalletSync } from './WalletSync';
+import { TrendingTokensModal } from '@/components/trending/TrendingTokensModal';
 
 export function Header() {
     const [isTrendingOpen, setIsTrendingOpen] = useState(false);

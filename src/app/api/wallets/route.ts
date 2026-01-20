@@ -13,7 +13,7 @@ export async function GET(req: Request) {
 
         const wallets = await prisma.wallet.findMany({
             where: { userId: session.user.id },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { connectedAt: 'desc' }
         });
 
         return NextResponse.json(wallets);
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
                 // Update last active
                 await prisma.wallet.update({
                     where: { id: existing.id },
-                    data: { lastActive: new Date() }
+                    data: { lastSeenAt: new Date() }
                 });
                 return NextResponse.json({ success: true, wallet: existing });
             } else {

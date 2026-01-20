@@ -28,6 +28,21 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const [shouldRender, setShouldRender] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
 
+    // Form State
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        age: '',
+        username: '',
+        address: '',
+    });
+
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+    });
+
     // Wallets State
     const [wallets, setWallets] = useState<any[]>([]);
 
@@ -242,7 +257,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                                     {wallet.isPrimary && <span className="text-[10px] font-bold bg-primary/20 text-primary px-1.5 py-0.5 rounded">PRIMARY</span>}
                                                     {wallet.isAutoSubscribed && <span className="text-[10px] font-bold bg-green-500/20 text-green-500 px-1.5 py-0.5 rounded">AUTO-SUB</span>}
                                                 </div>
-                                                <p className="text-xs text-text-secondary mt-1">Linked: {new Date(wallet.createdAt).toLocaleDateString()}</p>
+                                                <p className="text-xs text-text-secondary mt-1">Linked: {new Date(wallet.connectedAt).toLocaleDateString()}</p>
                                             </div>
                                             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 {/* Actions like disconnect would go here */}

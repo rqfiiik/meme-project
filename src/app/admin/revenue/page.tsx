@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { RevenueClient } from "./RevenueClient";
 
+export const dynamic = 'force-dynamic';
+
 export default async function RevenuePage() {
     const session = await auth();
 
@@ -10,27 +12,36 @@ export default async function RevenuePage() {
         redirect("/");
     }
 
-    // Calculate revenue
-    const allTx = await prisma.transaction.findMany({
-        select: { amount: true, date: true } // Assuming 'amount' is in SOL
+    // Fetch successful transactions
+    const transactions = await prisma.transaction.findMany({
+        where: { status: 'success' },
+        select: {
+            amount: true,
+            type: true,
+            date: true
+        },
+        orderBy: { date: 'asc' }
     });
 
-    const totalRevenue = allTx.reduce((acc, tx) => acc + tx.amount, 0);
-    const totalTransactions = allTx.length;
+    // Simple aggregation
+    const totalRevenue = transactions.reduce((acc, tx) => acc + tx.amount, 0);
 
-    // Today's Revenue
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const revenueToday = allTx
-        .filter(tx => new Date(tx.date) >= today)
-        .reduce((acc, tx) => acc + tx.amount, 0);
+    // Group by type
+    const byType: Record<string, number> = {};
+    transactions.forEach(tx => {
+        const type = tx.type || 'unknown';
+        byType[type] = (byType[type] || 0) + tx.amount;
+    });
 
-    const stats = {
-        totalRevenue,
-        revenueToday,
-        revenueThisMont: 0, // Placeholder
-        totalTransactions
+    const revenueData = {
+        total: totalRevenue,
+        breakdown: Object.entries(byType).map(([key, value]) => ({
+            name: key,
+            value: value,
+            percentage: totalRevenue > 0 ? (value / totalRevenue) * 100 : 0
+        })).sort((a, b) => b.value - a.value),
+        transactions: transactions.map(t => ({ ...t, date: t.date.toISOString() }))
     };
 
-    return <RevenueClient stats={stats} />;
+    return <RevenueClient data={revenueData} />;
 }
