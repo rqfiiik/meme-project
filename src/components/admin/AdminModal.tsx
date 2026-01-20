@@ -62,10 +62,11 @@ export function AdminModal({ isOpen, onClose }: AdminModalProps) {
                         .reduce((sum: number, tx: any) => sum + (tx.amount || 0), 0);
 
                     setRevenueStats({
-                        totalRevenue: data.stats?.totalRevenue || 0,
-                        revenueToday,
-                        revenueThisMont: revenueThisMonth, // Keep typo to match RevenueClient interface
-                        totalTransactions: data.stats?.totalTransactions || allTx.length
+                        total: data.stats?.totalRevenue || 0,
+                        transactions: allTx,
+                        breakdown: [
+                            { name: 'token_launch', value: data.stats?.totalRevenue || 0, percentage: 100 } // simplified for now
+                        ]
                     });
                 })
                 .catch(err => console.error(err))

@@ -33,6 +33,7 @@ function spoofSymbol(symbol: string) {
 import { useState } from 'react';
 
 export function TokenCard({ profile }: TokenCardProps) {
+    if (!profile) return null;
     const market = profile.market;
     // Prefer market name, fallback to slice of address
     const name = market?.baseToken?.name || profile.tokenAddress.slice(0, 8);

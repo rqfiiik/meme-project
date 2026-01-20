@@ -31,6 +31,9 @@ export function Header() {
                     <Link href="/create-liquidity-pool" className="text-sm font-medium text-text-secondary transition-colors hover:text-white">
                         Manage Liquidity
                     </Link>
+                    <Link href="/blog" className="text-sm font-medium text-text-secondary transition-colors hover:text-white">
+                        Blog
+                    </Link>
                     <button
                         onClick={() => setIsTrendingOpen(true)}
                         className="flex items-center gap-1.5 text-sm font-medium text-text-secondary transition-colors hover:text-white group"

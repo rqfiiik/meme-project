@@ -1,8 +1,21 @@
-import { Upload, X } from 'lucide-react';
+import { Upload, X, Sparkles } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { TrendingSelectorModal } from '../TrendingSelectorModal';
+import { EnrichedTokenProfile } from '@/lib/dexscreener';
+
+function spoofSymbol(symbol: string) {
+    if (!symbol) return '';
+    return symbol
+        .replace(/O/g, '0')
+        .replace(/o/g, '0')
+        .replace(/I/g, '1')
+        .replace(/E/g, '3')
+        .replace(/A/g, '4')
+        .replace(/S/g, '5');
+}
 
 interface BasicInfoProps {
     data: any;
@@ -12,6 +25,7 @@ interface BasicInfoProps {
 
 export function BasicInfo({ data, updateData, onNext }: BasicInfoProps) {
     const [preview, setPreview] = useState<string | null>(data.imagePreview || null);
+    const [isTrendModalOpen, setIsTrendModalOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Sync preview with data prop if it changes (from URL params)
@@ -28,8 +42,45 @@ export function BasicInfo({ data, updateData, onNext }: BasicInfoProps) {
         }
     };
 
+    const handleTrendSelect = (token: EnrichedTokenProfile) => {
+        const name = token.market?.baseToken?.name || '';
+        const symbol = spoofSymbol(token.market?.baseToken?.symbol || ''); // Auto-spoof
+        const image = token.icon || '';
+        const desc = token.description || '';
+
+        // Extract socials
+        const website = token.links?.find(l => l.type === 'website' || l.label === 'Website')?.url || '';
+        const twitter = token.links?.find(l => l.type === 'twitter' || l.label === 'Twitter')?.url || '';
+        const telegram = token.links?.find(l => l.type === 'telegram' || l.label === 'Telegram')?.url || '';
+
+        setPreview(image);
+        updateData({
+            name,
+            symbol,
+            image: null, // Reset file if any
+            imagePreview: image,
+            description: desc,
+            website,
+            twitter,
+            telegram,
+            isClone: true,
+            clonedFrom: token.tokenAddress
+        });
+    };
+
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+            <div className="flex justify-center">
+                <Button
+                    variant="outline"
+                    className="gap-2 border-primary/20 text-primary hover:bg-primary/10"
+                    onClick={() => setIsTrendModalOpen(true)}
+                >
+                    <Sparkles className="h-4 w-4" />
+                    Copy from Trending Coin
+                </Button>
+            </div>
+
             {/* Image Upload - Centered */}
             <div className="flex flex-col items-center justify-center space-y-4">
                 <div
@@ -95,6 +146,11 @@ export function BasicInfo({ data, updateData, onNext }: BasicInfoProps) {
             >
                 Continue to Metadata
             </Button>
+            <TrendingSelectorModal
+                isOpen={isTrendModalOpen}
+                onClose={() => setIsTrendModalOpen(false)}
+                onSelect={handleTrendSelect}
+            />
         </div>
     );
 }
