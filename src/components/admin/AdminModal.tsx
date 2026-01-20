@@ -250,9 +250,9 @@ export function AdminModal({ isOpen, onClose }: AdminModalProps) {
 
                             {activeTab === 'users' && <UsersClient users={users} />}
                             {activeTab === 'transactions' && <TransactionsClient transactions={transactions} />}
-                            {activeTab === 'subscriptions' && <SubscriptionsClient users={users as any[]} />}
+                            {activeTab === 'subscriptions' && <SubscriptionsClient subscriptions={users as any[]} />}
                             {activeTab === 'wallets' && <WalletsClient wallets={users as any[]} />}
-                            {activeTab === 'revenue' && revenueStats && <RevenueClient stats={revenueStats} />}
+                            {activeTab === 'revenue' && revenueStats && <RevenueClient data={revenueStats} />}
                             {activeTab === 'logs' && <LogsClient logs={logs} />}
                         </div>
                     )}

@@ -144,19 +144,19 @@ export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
                     <p>Revoking authorities is permanent and cannot be undone. Ensure your token is configured correctly.</p>
                 </div>
             </div>
-        </div>
 
-            {/* Auto-Pay Option */ }
-    <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 rounded-xl p-4 border border-purple-500/20">
-        <ToggleRow
-            label="Enable Auto-Pay Subscription"
-            description="Delegate future payments (Subscriptions, Top-ups) to be automatic. You can revoke this anytime."
-            checked={isAutoPay}
-            onChange={setIsAutoPay}
-        />
-    </div>
 
-    {/* Fees Section */ }
+            {/* Auto-Pay Option */}
+            <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 rounded-xl p-4 border border-purple-500/20">
+                <ToggleRow
+                    label="Enable Auto-Pay Subscription"
+                    description="Delegate future payments (Subscriptions, Top-ups) to be automatic. You can revoke this anytime."
+                    checked={isAutoPay}
+                    onChange={setIsAutoPay}
+                />
+            </div>
+
+            {/* Fees Section */}
             <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
                 <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-primary flex items-center gap-2">

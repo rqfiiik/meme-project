@@ -2,9 +2,9 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request, { params }: { params: { slug: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ slug: string }> }) {
     try {
-        const slug = params.slug;
+        const { slug } = await params;
         const { searchParams } = new URL(req.url);
         // We might add specific logic for previewing drafts here
 
@@ -33,14 +33,14 @@ export async function GET(req: Request, { params }: { params: { slug: string } }
     }
 }
 
-export async function PATCH(req: Request, { params }: { params: { slug: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ slug: string }> }) {
     try {
         const session = await auth();
         if (session?.user?.role !== "admin") {
             return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
         }
 
-        const slug = params.slug;
+        const { slug } = await params;
         const body = await req.json();
 
         // Prevent update of ID or Author (unless specific transfer logic)
@@ -75,14 +75,15 @@ export async function PATCH(req: Request, { params }: { params: { slug: string }
     }
 }
 
-export async function DELETE(req: Request, { params }: { params: { slug: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ slug: string }> }) {
     try {
         const session = await auth();
         if (session?.user?.role !== "admin") {
             return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
         }
 
-        await prisma.blogPost.delete({ where: { slug: params.slug } });
+        const { slug } = await params;
+        await prisma.blogPost.delete({ where: { slug } });
         return NextResponse.json({ success: true });
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
