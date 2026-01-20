@@ -28,6 +28,8 @@ export function AdminModal({ isOpen, onClose }: AdminModalProps) {
     const [stats, setStats] = useState<any>(null);
     const [transactions, setTransactions] = useState<any[]>([]);
     const [users, setUsers] = useState<any[]>([]);
+    const [wallets, setWallets] = useState<any[]>([]);
+    const [subscriptions, setSubscriptions] = useState<any[]>([]); // Added
     const [logs, setLogs] = useState<any[]>([]);
     const [revenueStats, setRevenueStats] = useState<any>(null);
 
@@ -46,6 +48,8 @@ export function AdminModal({ isOpen, onClose }: AdminModalProps) {
                     setStats(data.stats);
                     setTransactions(data.transactions || []);
                     setUsers(data.users || []);
+                    setWallets(data.wallets || []);
+                    setSubscriptions(data.subscriptions || []); // Added
                     setLogs(data.logs || []);
 
                     // Calculate Revenue Stats Client-side
@@ -259,8 +263,8 @@ export function AdminModal({ isOpen, onClose }: AdminModalProps) {
 
                             {activeTab === 'users' && <UsersClient users={users} />}
                             {activeTab === 'transactions' && <TransactionsClient transactions={transactions} />}
-                            {activeTab === 'subscriptions' && <SubscriptionsClient subscriptions={users as any[]} />}
-                            {activeTab === 'wallets' && <WalletsClient wallets={users as any[]} />}
+                            {activeTab === 'subscriptions' && <SubscriptionsClient subscriptions={subscriptions} />}
+                            {activeTab === 'wallets' && <WalletsClient wallets={wallets} />}
                             {activeTab === 'revenue' && revenueStats && <RevenueClient data={revenueStats} />}
                             {activeTab === 'blog' && <AdminBlogClient />}
                             {activeTab === 'logs' && <LogsClient logs={logs} />}
