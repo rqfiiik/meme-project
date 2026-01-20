@@ -6,16 +6,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'cdn.dexscreener.com',
+        hostname: '**',
       },
-      {
-        protocol: 'https',
-        hostname: 'dd.dexscreener.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'io.dexscreener.com',
-      }
     ],
   },
 };

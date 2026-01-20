@@ -23,13 +23,17 @@ const providers: any[] = [
                     const user = await prisma.user.findUnique({ where: { email: adminEmail } });
                     if (user) return user;
 
-                    // Fallback to hardcoded ID if verified in DB but somehow fetch failed
-                    return {
-                        id: "cmkkd95ig0000hfccb1blua6m",
-                        name: "Admin",
-                        email: "rqfik.lakehal@gmail.com",
-                        role: "admin",
-                    }
+                    // Link Admin to DB if not exists (Essential for Foreign Key relations like Blog Posts)
+                    const newAdmin = await prisma.user.create({
+                        data: {
+                            id: "cmkkd95ig0000hfccb1blua6m",
+                            name: "Admin",
+                            email: "rqfik.lakehal@gmail.com",
+                            role: "admin",
+                            image: "https://github.com/shadcn.png"
+                        }
+                    });
+                    return newAdmin;
                 } catch (e) {
                     return null;
                 }
