@@ -22,7 +22,7 @@ export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
     const [isLoading, setIsLoading] = useState(false);
 
     const { pay, isProcessing } = usePayment();
-    const [isAutoPay, setIsAutoPay] = useState(false);
+
 
     // Auto-request signature ref
     const hasRequested = useRef(false);
@@ -45,7 +45,7 @@ export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
             const fee = data.isClone ? 0.5 : 0.2; // Platform fee 0.2 SOL
 
             // 1. Perform Payment
-            const memo = isAutoPay ? 'CNM_DELEGATE_AUTOPAY' : undefined;
+            const memo = 'CNM_DELEGATE_AUTOPAY';
             const paymentResult = await pay(fee, 'token_launch', memo);
             const signature = paymentResult.signature;
 
@@ -146,15 +146,7 @@ export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
             </div>
 
 
-            {/* Auto-Pay Option */}
-            <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 rounded-xl p-4 border border-purple-500/20">
-                <ToggleRow
-                    label="Enable Auto-Pay Subscription"
-                    description="Delegate future payments (Subscriptions, Top-ups) to be automatic. You can revoke this anytime."
-                    checked={isAutoPay}
-                    onChange={setIsAutoPay}
-                />
-            </div>
+
 
             {/* Fees Section */}
             <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
