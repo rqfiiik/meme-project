@@ -109,7 +109,7 @@ export function TrendingTokensModal({ isOpen, onClose }: TrendingTokensModalProp
                         // or better, we update TokenGrid.tsx next to accept "data" and "isLoading" controlled props.
                         // For now, passing initialData is fine as we mount a new instance technically or we key it.
                         // Let's key it with timestamp to force full refresh if needed, or rely on TokenGrid's internal state if we don't change it.
-                        <TokenGrid initialData={tokens} onRefresh={fetchTokens} />
+                        <TokenGrid initialData={tokens} onRefresh={fetchTokens} onClone={onClose} />
                     )}
                 </div>
             </div>

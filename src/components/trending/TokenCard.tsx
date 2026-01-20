@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 
 interface TokenCardProps {
     profile: EnrichedTokenProfile;
+    onClone?: () => void;
 }
 
 function formatVolume(vol?: number) {
@@ -32,7 +33,7 @@ function spoofSymbol(symbol: string) {
 
 import { useState } from 'react';
 
-export function TokenCard({ profile }: TokenCardProps) {
+export function TokenCard({ profile, onClone }: TokenCardProps) {
     if (!profile) return null;
     const market = profile.market;
     // Prefer market name, fallback to slice of address
@@ -125,7 +126,7 @@ export function TokenCard({ profile }: TokenCardProps) {
             </div>
 
             <div className="relative z-10 mt-5 pt-4 border-t border-border/50">
-                <Link href={cloneUrl} className="w-full">
+                <Link href={cloneUrl} className="w-full" onClick={onClone}>
                     <Button
                         className="w-full gap-2 font-semibold shadow-lg shadow-primary/10 group-hover:shadow-primary/25"
                         size="sm"

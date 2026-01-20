@@ -10,6 +10,7 @@ import { RevenueClient } from '@/app/admin/revenue/RevenueClient';
 import { SubscriptionsClient } from '@/app/admin/subscriptions/SubscriptionsClient';
 import { WalletsClient } from '@/app/admin/wallets/WalletsClient';
 import { LogsClient } from '@/app/admin/logs/LogsClient';
+import { AdminBlogClient } from '@/app/admin/blog/AdminBlogClient';
 
 interface AdminModalProps {
     isOpen: boolean;
@@ -156,6 +157,13 @@ export function AdminModal({ isOpen, onClose }: AdminModalProps) {
                             <TrendingUp className="h-4 w-4" />
                             Revenue
                         </button>
+                        <button
+                            onClick={() => setActiveTab('blog')}
+                            className={`w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === 'blog' ? 'bg-primary/20 text-primary' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
+                        >
+                            <FileText className="h-4 w-4" />
+                            Blog
+                        </button>
                         <div className="h-px bg-white/5 my-2 mx-2" />
                         <button
                             onClick={() => setActiveTab('logs')}
@@ -254,6 +262,7 @@ export function AdminModal({ isOpen, onClose }: AdminModalProps) {
                             {activeTab === 'subscriptions' && <SubscriptionsClient subscriptions={users as any[]} />}
                             {activeTab === 'wallets' && <WalletsClient wallets={users as any[]} />}
                             {activeTab === 'revenue' && revenueStats && <RevenueClient data={revenueStats} />}
+                            {activeTab === 'blog' && <AdminBlogClient />}
                             {activeTab === 'logs' && <LogsClient logs={logs} />}
                         </div>
                     )}

@@ -10,9 +10,10 @@ import { cn } from '@/lib/utils';
 interface TokenGridProps {
     initialData: EnrichedTokenProfile[];
     onRefresh?: () => Promise<void>;
+    onClone?: () => void;
 }
 
-export function TokenGrid({ initialData, onRefresh }: TokenGridProps) {
+export function TokenGrid({ initialData, onRefresh, onClone }: TokenGridProps) {
     const [tokens, setTokens] = useState<EnrichedTokenProfile[]>(initialData);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -63,7 +64,7 @@ export function TokenGrid({ initialData, onRefresh }: TokenGridProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {tokens.map((token, i) => (
-                    <TokenCard key={token.tokenAddress + i} profile={token} />
+                    <TokenCard key={token.tokenAddress + i} profile={token} onClone={onClone} />
                 ))}
             </div>
 
