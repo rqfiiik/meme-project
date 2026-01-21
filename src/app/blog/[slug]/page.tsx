@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { ArrowLeft, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
 import { AdBanner } from "@/components/blog/AdBanner";
 import { RelatedPosts } from "@/components/blog/RelatedPosts";
+import { FadeInImage } from "@/components/ui/FadeInImage";
 import React from "react";
 
 // Force dynamic if we want live draft previews
@@ -171,12 +172,19 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     </div>
                 </div>
 
-                {/* Hero Image - Wide but not full screen */}
+                import {FadeInImage} from "@/components/ui/FadeInImage"; // Ensure import
+
+                // ... inside render ...
                 {post.coverImage && (
                     <div className="container max-w-[900px] mx-auto px-4 mb-4">
-                        <div className="relative aspect-[16/9] w-full overflow-hidden rounded-sm">
-                            <Image src={post.coverImage} alt={post.title} fill className="object-cover" priority />
-                        </div>
+                        <FadeInImage
+                            src={post.coverImage}
+                            alt={post.title}
+                            fill
+                            className="object-cover"
+                            priority
+                            containerClassName="relative aspect-[16/9] w-full overflow-hidden rounded-sm"
+                        />
                         <div className="text-center mt-3 text-sm text-text-muted">
                             Image by <span className="underline decoration-1 underline-offset-2">CreateMeme.io</span>
                         </div>

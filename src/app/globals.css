@@ -58,4 +58,14 @@ body {
   --color-accent-foreground: var(--accent-foreground);
 
   --color-border: var(--border);
+  --animate-shimmer: shimmer 2s infinite;
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
 }
