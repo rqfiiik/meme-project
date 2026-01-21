@@ -21,7 +21,14 @@ export function CreateTokenWizard() {
         website: '',
         twitter: '',
         telegram: '',
-        isClone: false
+        isClone: false,
+        // Dynamic Pricing Options
+        isRevokeMint: false,
+        isRevokeFreeze: false,
+        isRevokeUpdate: false,
+        isCustomCreatorInfo: false,
+        creatorName: '',
+        creatorWebsite: ''
     });
 
     // Pre-fill name, symbol, image, socials from URL
@@ -73,7 +80,7 @@ export function CreateTokenWizard() {
                     <TokenMetadata data={formData} updateData={updateData} onNext={nextStep} onBack={prevStep} />
                 )}
                 {currentStep === 3 && (
-                    <ReviewDeploy data={formData} onBack={prevStep} />
+                    <ReviewDeploy data={formData} updateData={updateData} onBack={prevStep} />
                 )}
             </div>
         </div>

@@ -19,7 +19,7 @@ export default function Home() {
 
             {/* Simple Footer */}
             <footer className="py-8 border-t border-border text-center text-text-muted text-sm">
-                <p>&copy; 2026 CreateMeme.io. All rights reserved.</p>
+                <p>&copy; 2026 ExitMeme.com. All rights reserved.</p>
             </footer>
         </div>
     );

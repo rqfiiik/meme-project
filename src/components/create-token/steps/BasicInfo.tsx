@@ -115,25 +115,72 @@ export function BasicInfo({ data, updateData, onNext }: BasicInfoProps) {
             </div>
 
             {/* Inputs */}
-            <div className="grid gap-6">
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-text-secondary">Token Name</label>
-                    <input
-                        value={data.name}
-                        onChange={(e) => updateData({ name: e.target.value })}
-                        placeholder="e.g. Bonk 2.0"
-                        className="w-full rounded-lg border border-border bg-background px-4 py-3 text-white placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    />
+            <div className="space-y-6">
+                <div className="grid gap-6">
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-text-secondary">Token Name</label>
+                        <input
+                            value={data.name}
+                            onChange={(e) => updateData({ name: e.target.value })}
+                            placeholder="e.g. Bonk 2.0"
+                            className="w-full rounded-lg border border-border bg-background px-4 py-3 text-white placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-text-secondary">Token Symbol</label>
+                        <input
+                            value={data.symbol}
+                            onChange={(e) => updateData({ symbol: e.target.value.toUpperCase() })}
+                            placeholder="e.g. BONK"
+                            className="w-full rounded-lg border border-border bg-background px-4 py-3 text-white placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary uppercase"
+                        />
+                    </div>
                 </div>
 
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-text-secondary">Token Symbol</label>
-                    <input
-                        value={data.symbol}
-                        onChange={(e) => updateData({ symbol: e.target.value.toUpperCase() })}
-                        placeholder="e.g. BONK"
-                        className="w-full rounded-lg border border-border bg-background px-4 py-3 text-white placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary uppercase"
-                    />
+                {/* Modify Creator Info Toggle */}
+                <div className="p-4 rounded-xl border border-border bg-background">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 className="text-white font-medium">Modify Creator Information</h3>
+                            <p className="text-xs text-text-muted">Change the information of the creator in the metadata. By default, it is LaunchToken.</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm font-medium text-secondary">+0.1 SOL</span>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={data.isCustomCreatorInfo}
+                                    onChange={(e) => updateData({ isCustomCreatorInfo: e.target.checked })}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-surface peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    {data.isCustomCreatorInfo && (
+                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-text-secondary">Creator Name</label>
+                                <input
+                                    value={data.creatorName}
+                                    onChange={(e) => updateData({ creatorName: e.target.value })}
+                                    placeholder="Your name or organization"
+                                    className="w-full rounded-lg border border-border bg-surface px-4 py-3 text-white placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-text-secondary">Creator Website</label>
+                                <input
+                                    value={data.creatorWebsite}
+                                    onChange={(e) => updateData({ creatorWebsite: e.target.value })}
+                                    placeholder="https://mymemecoin.com"
+                                    className="w-full rounded-lg border border-border bg-surface px-4 py-3 text-white placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 

@@ -8,7 +8,7 @@ export function RelatedPosts({ posts }: { posts: any[] }) {
     return (
         <section className="py-16 border-t border-border mt-16 bg-[#0a0a0a]">
             <div className="container max-w-5xl mx-auto px-4">
-                <h3 className="text-2xl font-bold text-white mb-8">Recommended from CreateMeme</h3>
+                <h3 className="text-2xl font-bold text-white mb-8">Recommended from Exit Meme</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {posts.map((post) => (
                         <Link href={`/blog/${post.slug}`} key={post.id} className="group cursor-pointer">
@@ -31,7 +31,7 @@ export function RelatedPosts({ posts }: { posts: any[] }) {
                                             <Image src={post.author.image} alt={post.author.name} fill className="object-cover" />
                                         </div>
                                     )}
-                                    <span className="text-xs text-text-secondary font-medium">{post.author?.name || 'CreateMeme'}</span>
+                                    <span className="text-xs text-text-secondary font-medium">{post.author?.name || 'Exit Meme'}</span>
                                 </div>
                                 <h4 className="font-bold text-white leading-tight group-hover:text-text-secondary transition-colors line-clamp-2">
                                     {post.title}

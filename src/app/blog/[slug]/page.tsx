@@ -187,7 +187,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                             containerClassName="relative aspect-[16/9] w-full overflow-hidden rounded-sm"
                         />
                         <div className="text-center mt-3 text-sm text-text-muted">
-                            Image by <span className="underline decoration-1 underline-offset-2">CreateMeme.io</span>
+                            Image by <span className="underline decoration-1 underline-offset-2">Exit Meme</span>
                         </div>
                     </div>
                 )}

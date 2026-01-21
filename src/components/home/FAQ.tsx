@@ -7,8 +7,8 @@ import { cn } from '@/lib/utils';
 
 const FAQS = [
     {
-        question: "What is CreateMeme.io?",
-        answer: "CreateMeme.io is a no-code platform that allows you to create, mint, and launch your own Solana tokens in seconds. We handle all the complex smart contract interactions for you."
+        question: "What is ExitMeme.com?",
+        answer: "ExitMeme.com is a no-code platform that allows you to create, mint, and launch your own Solana tokens in seconds. We handle all the complex smart contract interactions for you."
     },
     {
         question: "How much does it cost?",

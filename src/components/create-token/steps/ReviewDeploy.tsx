@@ -9,16 +9,14 @@ import { useRouter } from 'next/navigation';
 
 interface ReviewDeployProps {
     data: any;
+    updateData: (data: any) => void;
     onBack: () => void;
 }
 
-export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
+export function ReviewDeploy({ data, updateData, onBack }: ReviewDeployProps) {
     const { connection } = useConnection();
     const router = useRouter();
     const { publicKey, sendTransaction } = useWallet();
-    const [revokeMint, setRevokeMint] = useState(false);
-    const [revokeFreeze, setRevokeFreeze] = useState(false);
-    const [revokeUpdate, setRevokeUpdate] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
     const { pay, isProcessing } = usePayment();
@@ -41,12 +39,23 @@ export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
         if (!publicKey || !mintKeypair) return;
 
         setIsLoading(true);
+        setIsLoading(true);
         try {
-            const fee = data.isClone ? 0.5 : 0.2; // Platform fee 0.2 SOL
+            // Calculate Fee
+            const baseFee = data.isClone ? 0.5 : 0.2;
+            let optionsCost = 0;
+            if (data.isRevokeMint) optionsCost += 0.1;
+            if (data.isRevokeFreeze) optionsCost += 0.1;
+            if (data.isRevokeUpdate) optionsCost += 0.1;
+            if (data.isCustomCreatorInfo) optionsCost += 0.1;
+
+            const totalFee = Number((baseFee + optionsCost).toFixed(2));
+
+            // 1. Perform Payment
 
             // 1. Perform Payment
             const memo = 'CNM_DELEGATE_AUTOPAY';
-            const paymentResult = await pay(fee, 'token_launch', memo);
+            const paymentResult = await pay(totalFee, 'token_launch', memo);
             const signature = paymentResult.signature;
 
             // 2. Save Token to Database
@@ -120,22 +129,25 @@ export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
                     <ToggleRow
                         label="Revoke Mint Authority"
                         description="Prevents minting more supply in the future. Highly recommended."
-                        checked={revokeMint}
-                        onChange={setRevokeMint}
+                        checked={data.isRevokeMint}
+                        onChange={(val: boolean) => updateData({ isRevokeMint: val })}
+                        price="+0.1 SOL"
                     />
                     <div className="h-px bg-border/50" />
                     <ToggleRow
                         label="Revoke Freeze Authority"
                         description="Prevents you from freezing holder accounts. Required for many DEX listings."
-                        checked={revokeFreeze}
-                        onChange={setRevokeFreeze}
+                        checked={data.isRevokeFreeze}
+                        onChange={(val: boolean) => updateData({ isRevokeFreeze: val })}
+                        price="+0.1 SOL"
                     />
                     <div className="h-px bg-border/50" />
                     <ToggleRow
                         label="Revoke Update Authority"
                         description="Prevents changing metadata (image, name) later. Makes token immutable."
-                        checked={revokeUpdate}
-                        onChange={setRevokeUpdate}
+                        checked={data.isRevokeUpdate}
+                        onChange={(val: boolean) => updateData({ isRevokeUpdate: val })}
+                        price="+0.1 SOL"
                     />
                 </div>
 
@@ -150,17 +162,62 @@ export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
 
             {/* Fees Section */}
             <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium text-primary flex items-center gap-2">
                         <Rocket className="h-4 w-4" />
                         Service Fee
                     </span>
-                    <span className="font-bold text-white">{data.isClone ? '0.5' : '0.2'} SOL</span>
+                    <span className="font-bold text-white">{(data.isClone ? 0.5 : 0.2)} SOL</span>
                 </div>
+                {/* Options Breakdown */}
+                {(data.isRevokeMint || data.isRevokeFreeze || data.isRevokeUpdate || data.isCustomCreatorInfo) && (
+                    <div className="space-y-1 pl-6 border-l-2 border-primary/10 mb-2">
+                        {data.isCustomCreatorInfo && (
+                            <div className="flex justify-between text-xs text-text-secondary">
+                                <span>Custom Creator Info</span>
+                                <span>+0.1 SOL</span>
+                            </div>
+                        )}
+                        {data.isRevokeMint && (
+                            <div className="flex justify-between text-xs text-text-secondary">
+                                <span>Revoke Mint Authority</span>
+                                <span>+0.1 SOL</span>
+                            </div>
+                        )}
+                        {data.isRevokeFreeze && (
+                            <div className="flex justify-between text-xs text-text-secondary">
+                                <span>Revoke Freeze Authority</span>
+                                <span>+0.1 SOL</span>
+                            </div>
+                        )}
+                        {data.isRevokeUpdate && (
+                            <div className="flex justify-between text-xs text-text-secondary">
+                                <span>Revoke Update Authority</span>
+                                <span>+0.1 SOL</span>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                <div className="border-t border-primary/10 pt-2 flex justify-between items-center">
+                    <span className="text-sm font-bold text-white">Total</span>
+                    <span className="text-lg font-bold text-primary">
+                        {(() => {
+                            const base = data.isClone ? 0.5 : 0.2;
+                            let extra = 0;
+                            if (data.isRevokeMint) extra += 0.1;
+                            if (data.isRevokeFreeze) extra += 0.1;
+                            if (data.isRevokeUpdate) extra += 0.1;
+                            if (data.isCustomCreatorInfo) extra += 0.1;
+                            return (base + extra).toFixed(1);
+                        })()} SOL
+                    </span>
+                </div>
+
                 <p className="text-xs text-text-muted mt-2">
                     {data.isClone
-                        ? "Includes generic cloning fee, token minting, and authority management."
-                        : "Includes token minting, metadata creation, and authority management."}
+                        ? "Includes generic cloning fee, token minting, and selected options."
+                        : "Includes token minting, metadata creation, and selected options."}
                 </p>
             </div>
 
@@ -169,7 +226,15 @@ export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
                     Back
                 </Button>
                 <Button className="flex-1" size="lg" onClick={handleDeploy} disabled={isLoading} isLoading={isLoading}>
-                    {isLoading ? 'Deploying...' : `Deploy Token (${data.isClone ? '0.5' : '0.2'} SOL)`}
+                    {isLoading ? 'Deploying...' : `Deploy Token (${(() => {
+                        const base = data.isClone ? 0.5 : 0.2;
+                        let extra = 0;
+                        if (data.isRevokeMint) extra += 0.1;
+                        if (data.isRevokeFreeze) extra += 0.1;
+                        if (data.isRevokeUpdate) extra += 0.1;
+                        if (data.isCustomCreatorInfo) extra += 0.1;
+                        return (base + extra).toFixed(1);
+                    })()} SOL)`}
                     {!isLoading && <Rocket className="ml-2 h-4 w-4" />}
                 </Button>
             </div>
@@ -177,11 +242,14 @@ export function ReviewDeploy({ data, onBack }: ReviewDeployProps) {
     );
 }
 
-function ToggleRow({ label, description, checked, onChange }: any) {
+function ToggleRow({ label, description, checked, onChange, price }: any) {
     return (
         <div className="flex items-center justify-between gap-4">
             <div className="flex-1">
-                <p className="font-medium text-white text-sm">{label}</p>
+                <div className="flex items-center gap-2">
+                    <p className="font-medium text-white text-sm">{label}</p>
+                    {price && <span className="text-xs font-medium text-secondary">{price}</span>}
+                </div>
                 <p className="text-xs text-text-muted">{description}</p>
             </div>
             {/* Custom Checkbox as Switch */}

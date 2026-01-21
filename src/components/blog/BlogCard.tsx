@@ -35,7 +35,7 @@ export function BlogCard({ post, index }: BlogCardProps) {
                                 {post.author?.name?.[0] || 'A'}
                             </div>
                         )}
-                        <span className="text-sm font-medium text-white">{post.author?.name || 'CreateMeme'}</span>
+                        <span className="text-sm font-medium text-white">{post.author?.name || 'Exit Meme'}</span>
                         <span className="text-text-muted text-[13px]">·</span>
                         <time className="text-[13px] text-text-muted">
                             {format(postedDate, 'MMM d, yyyy')}

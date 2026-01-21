@@ -9,7 +9,7 @@ import { AuthWrapper } from '@/components/auth/AuthWrapper';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'CreateMeme.io | Create Solana Tokens',
+  title: 'Exit Meme | Create Solana Tokens',
   description: 'Launch your meme coin on Solana in seconds. No coding required.',
   verification: {
     google: 'sjmUtH2TExW3VIZCWiCjuXm8mM71l_H7b0ST5Ntj_zE',

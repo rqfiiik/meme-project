@@ -2,7 +2,7 @@ import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL, TransactionInstruction } from '@solana/web3.js';
 import { useState } from 'react';
 
-const PLATFORM_WALLET = process.env.NEXT_PUBLIC_PLATFORM_WALLET_ADDRESS || "11111111111111111111111111111111";
+const PLATFORM_WALLET = process.env.NEXT_PUBLIC_TREASURY_ADDRESS || "11111111111111111111111111111111";
 
 export function usePayment() {
     const { connection } = useConnection();

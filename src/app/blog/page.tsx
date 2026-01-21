@@ -7,7 +7,7 @@ import { BlogFeed } from "@/components/blog/BlogFeed";
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'Blog | CreateMeme.io',
+    title: 'Blog | Exit Meme',
     description: 'Insights, tutorials, and ecosystem updates for Solana meme coin creators.',
 };
 
