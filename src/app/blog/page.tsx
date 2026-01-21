@@ -50,15 +50,16 @@ export default async function BlogListingPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {/* {posts.length > 0 ? (
+                    {posts.length > 0 ? (
                         posts.map((post: any) => (
                             <Link href={`/blog/${post.slug}`} key={post.id} className="group hover:no-underline">
                                 <article className="h-full bg-surface border border-border rounded-xl overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10">
+                                    {/* Image */}
                                     <div className="relative aspect-video w-full bg-surface-highlight overflow-hidden">
                                         {post.coverImage ? (
                                             <Image
                                                 src={post.coverImage}
-                                                alt={post.title}
+                                                alt={post.title || 'Blog Post'}
                                                 fill
                                                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                                             />
@@ -69,9 +70,11 @@ export default async function BlogListingPage() {
                                         )}
                                     </div>
 
+                                    {/* Content */}
                                     <div className="p-6 space-y-4">
-                                        <div className="flex gap-2">
-                                            {post.categories.map((cat: any) => (
+                                        {/* Categories */}
+                                        <div className="flex gap-2 flex-wrap">
+                                            {post.categories?.map((cat: any) => (
                                                 <span key={cat.id} className="text-[10px] uppercase tracking-wider font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">
                                                     {cat.name}
                                                 </span>
@@ -86,14 +89,15 @@ export default async function BlogListingPage() {
                                             {post.excerpt}
                                         </p>
 
+                                        {/* Footer */}
                                         <div className="pt-4 flex items-center justify-between border-t border-border/50">
                                             <div className="flex items-center gap-2">
-                                                {post.author.image && (
+                                                {post.author?.image && (
                                                     <div className="relative w-6 h-6 rounded-full overflow-hidden">
-                                                        <Image src={post.author.image} alt={post.author.name} fill className="object-cover" />
+                                                        <Image src={post.author.image} alt={post.author.name || 'Author'} fill className="object-cover" />
                                                     </div>
                                                 )}
-                                                <span className="text-xs text-text-muted">{post.author.name}</span>
+                                                <span className="text-xs text-text-muted">{post.author?.name || 'Unknown Author'}</span>
                                             </div>
                                             <time className="text-xs text-text-muted">
                                                 {post.publishedAt ? format(new Date(post.publishedAt), 'MMM d, yyyy') : 'Draft'}
@@ -107,8 +111,7 @@ export default async function BlogListingPage() {
                         <div className="col-span-full text-center py-20">
                             <p className="text-text-muted text-lg">No blog posts found. Check back later!</p>
                         </div>
-                    )} */}
-                    <div className="col-span-full text-center py-20 text-white">Debug: Posts rendering disabled</div>
+                    )}
                 </div>
             </main>
         </div>
