@@ -7,6 +7,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
 import { AdBanner } from "@/components/blog/AdBanner";
+import { BlogCTA } from "@/components/blog/BlogCTA";
 import { RelatedPosts } from "@/components/blog/RelatedPosts";
 import { FadeInImage } from "@/components/ui/FadeInImage";
 import React from "react";
@@ -195,14 +196,34 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                         {contentChunks.map((chunk, index) => (
                             <React.Fragment key={index}>
                                 <div dangerouslySetInnerHTML={{ __html: chunk }} />
-                                {/* Inject Ad after 2nd and 5th paragraphs approx */}
-                                {(index === 1 || index === 4 || index === 8) && (
-                                    <div className="not-prose">
+
+                                {/* Injection Logic */}
+                                {index === 1 && (
+                                    <div className="not-prose my-8">
+                                        <AdBanner />
+                                    </div>
+                                )}
+
+                                {index === 4 && (
+                                    <div className="not-prose my-12">
+                                        <BlogCTA />
+                                    </div>
+                                )}
+
+                                {index === 7 && (
+                                    <div className="not-prose my-8">
                                         <AdBanner />
                                     </div>
                                 )}
                             </React.Fragment>
                         ))}
+
+                        {/* Final CTA if long post */}
+                        {contentChunks.length > 10 && (
+                            <div className="not-prose mt-12">
+                                <BlogCTA />
+                            </div>
+                        )}
                     </div>
 
                     {/* Tags */}
