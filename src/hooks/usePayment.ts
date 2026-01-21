@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { CONFIG } from '../lib/config';
 
 const PLATFORM_WALLET = CONFIG.TREASURY_ADDRESS;
-console.log("DEBUG: Treasury Address loaded from config:", PLATFORM_WALLET);
 
 export function usePayment() {
     const { connection } = useConnection();

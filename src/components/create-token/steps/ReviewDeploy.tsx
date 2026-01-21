@@ -216,9 +216,7 @@ export function ReviewDeploy({ data, updateData, onBack }: ReviewDeployProps) {
                         })()} SOL
                     </span>
                 </div>
-                <div className="mt-2 text-[10px] text-orange-400 font-mono text-center">
-                    DEBUG: Address Loaded: {CONFIG.TREASURY_ADDRESS}
-                </div>
+
 
                 <p className="text-xs text-text-muted mt-2">
                     {data.isClone
