@@ -172,9 +172,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     </div>
                 </div>
 
-                import {FadeInImage} from "@/components/ui/FadeInImage"; // Ensure import
-
-                // ... inside render ...
+                {/* Hero Image - Wide but not full screen */}
                 {post.coverImage && (
                     <div className="container max-w-[900px] mx-auto px-4 mb-4">
                         <FadeInImage
