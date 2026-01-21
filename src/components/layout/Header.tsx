@@ -48,7 +48,7 @@ export function Header() {
                     <WalletConnectButton />
                 </div>
             </div>
-            {/* <TrendingTokensModal isOpen={isTrendingOpen} onClose={() => setIsTrendingOpen(false)} /> */}
+            <TrendingTokensModal isOpen={isTrendingOpen} onClose={() => setIsTrendingOpen(false)} />
         </header >
     );
 }
