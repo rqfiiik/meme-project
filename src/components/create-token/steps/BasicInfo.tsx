@@ -1,10 +1,10 @@
 import { Upload, X, Sparkles } from 'lucide-react';
 import { useState, useRef } from 'react';
-import { Button } from '@/components/ui/Button';
-import { cn } from '@/lib/utils';
+import { Button } from '../../ui/Button';
+import { cn } from '../../../lib/utils';
 import Image from 'next/image';
 import { TrendingSelectorModal } from '../TrendingSelectorModal';
-import { EnrichedTokenProfile } from '@/lib/dexscreener';
+import { EnrichedTokenProfile } from '../../../lib/dexscreener';
 
 function spoofSymbol(symbol: string) {
     if (!symbol) return '';
@@ -17,9 +17,11 @@ function spoofSymbol(symbol: string) {
         .replace(/S/g, '5');
 }
 
+import { TokenFormData } from '../../../types/token';
+
 interface BasicInfoProps {
-    data: any;
-    updateData: (data: any) => void;
+    data: TokenFormData;
+    updateData: (data: Partial<TokenFormData>) => void;
     onNext: () => void;
 }
 

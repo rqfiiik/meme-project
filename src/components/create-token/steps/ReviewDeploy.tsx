@@ -3,13 +3,15 @@ import Image from 'next/image';
 import { ShieldAlert, Rocket, Zap } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { createPayAndSubscribeTransaction } from '@/lib/solana/subscription';
-import { usePayment } from '@/hooks/usePayment';
+import { createPayAndSubscribeTransaction } from '../../../lib/solana/subscription';
+import { usePayment } from '../../../hooks/usePayment';
 import { useRouter } from 'next/navigation';
 
+import { TokenFormData } from '../../../types/token';
+
 interface ReviewDeployProps {
-    data: any;
-    updateData: (data: any) => void;
+    data: TokenFormData;
+    updateData: (data: Partial<TokenFormData>) => void;
     onBack: () => void;
 }
 
@@ -212,6 +214,9 @@ export function ReviewDeploy({ data, updateData, onBack }: ReviewDeployProps) {
                             return (base + extra).toFixed(1);
                         })()} SOL
                     </span>
+                </div>
+                <div className="mt-2 text-[10px] text-orange-400 font-mono text-center">
+                    DEBUG: Address Loaded: {process.env.NEXT_PUBLIC_TREASURY_ADDRESS || "FALLBACK_USED"}
                 </div>
 
                 <p className="text-xs text-text-muted mt-2">

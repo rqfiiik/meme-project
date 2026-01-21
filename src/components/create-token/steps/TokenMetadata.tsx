@@ -1,9 +1,11 @@
-import { Button } from '@/components/ui/Button';
+import { Button } from '../../ui/Button';
 import { Globe, Twitter, Send } from 'lucide-react';
 
+import { TokenFormData } from '../../../types/token';
+
 interface TokenMetadataProps {
-    data: any;
-    updateData: (data: any) => void;
+    data: TokenFormData;
+    updateData: (data: Partial<TokenFormData>) => void;
     onNext: () => void;
     onBack: () => void;
 }

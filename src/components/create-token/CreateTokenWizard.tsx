@@ -2,17 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { StepIndicator } from '@/components/create-pool/StepIndicator';
+import { StepIndicator } from '../create-pool/StepIndicator';
 import { BasicInfo } from './steps/BasicInfo';
 import { TokenMetadata } from './steps/TokenMetadata';
 import { ReviewDeploy } from './steps/ReviewDeploy';
+
+import { TokenFormData } from '../../types/token';
 
 const STEPS = ['Token Details', 'Metadata & Socials', 'Review & Deploy'];
 
 export function CreateTokenWizard() {
     const searchParams = useSearchParams();
     const [currentStep, setCurrentStep] = useState(1);
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<TokenFormData>({
         name: '',
         symbol: '',
         image: null,
@@ -53,7 +55,7 @@ export function CreateTokenWizard() {
         }));
     }, [searchParams]);
 
-    const updateData = (newData: any) => setFormData(prev => ({ ...prev, ...newData }));
+    const updateData = (newData: Partial<TokenFormData>) => setFormData(prev => ({ ...prev, ...newData }));
     const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, STEPS.length));
     const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
 

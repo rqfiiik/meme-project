@@ -3,17 +3,13 @@ import {
     PublicKey,
     SystemProgram,
     Transaction,
-    LAMPORTS_PER_SOL,
-    TransactionInstruction
+    LAMPORTS_PER_SOL
 } from '@solana/web3.js';
 import {
     createAssociatedTokenAccountInstruction,
-    createSyncNativeInstruction,
     createApproveInstruction,
     getAssociatedTokenAddress,
-    NATIVE_MINT,
-    TOKEN_PROGRAM_ID,
-    ASSOCIATED_TOKEN_PROGRAM_ID
+    NATIVE_MINT
 } from '@solana/spl-token';
 import { SERVICE_WALLET_PUBLIC_KEY } from './transaction';
 
