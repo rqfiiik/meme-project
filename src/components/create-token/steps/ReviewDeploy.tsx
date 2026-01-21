@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/Button';
+import { Button } from '../../ui/Button';
 import Image from 'next/image';
 import { ShieldAlert, Rocket, Zap } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';

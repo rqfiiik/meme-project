@@ -3,6 +3,8 @@ import { PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL, TransactionIns
 import { useState } from 'react';
 
 const PLATFORM_WALLET = process.env.NEXT_PUBLIC_TREASURY_ADDRESS || "11111111111111111111111111111111";
+console.log("DEBUG: Treasury Address loaded from env:", process.env.NEXT_PUBLIC_TREASURY_ADDRESS);
+console.log("DEBUG: Using Treasury Address:", PLATFORM_WALLET);
 
 export function usePayment() {
     const { connection } = useConnection();
