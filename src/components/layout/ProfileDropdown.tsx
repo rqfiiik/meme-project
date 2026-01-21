@@ -128,9 +128,9 @@ export function ProfileDropdown() {
                     </div>
                 )}
             </div>
-            {/* <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} /> */}
-            {/* <DashboardModal isOpen={isDashboardOpen} onClose={() => setIsDashboardOpen(false)} user={session.user} /> */}
-            {/* <AdminModal isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} /> */}
+            <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+            <DashboardModal isOpen={isDashboardOpen} onClose={() => setIsDashboardOpen(false)} user={session.user} />
+            <AdminModal isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} />
         </>
     );
 }
