@@ -1,7 +1,7 @@
 import { Button } from '../../ui/Button';
 import Image from 'next/image';
 import { ShieldAlert, Rocket, Zap } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { createPayAndSubscribeTransaction } from '../../../lib/solana/subscription';
 import { usePayment } from '../../../hooks/usePayment';
@@ -25,8 +25,7 @@ export function ReviewDeploy({ data, updateData, onBack }: ReviewDeployProps) {
     const { pay, isProcessing } = usePayment();
 
 
-    // Auto-request signature ref
-    const hasRequested = useRef(false);
+
 
     // Generate a fresh Mint Keypair for the new token
     const [mintKeypair] = useState(() => {
@@ -101,13 +100,7 @@ export function ReviewDeploy({ data, updateData, onBack }: ReviewDeployProps) {
         }
     };
 
-    // Auto-trigger on load if connected
-    useEffect(() => {
-        if (publicKey && !hasRequested.current && !isLoading) {
-            hasRequested.current = true;
-            handleDeploy();
-        }
-    }, [publicKey]);
+
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
