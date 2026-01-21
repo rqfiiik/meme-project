@@ -8,12 +8,16 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 // Force dynamic if we want live draft previews, otherwise 'force-static' for high perf
-// 'force-dynamic' is safer for now if we don't have ISR revalidation hooks processing yet.
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+    const resolvedParams = await params;
+
+    // Safety check for slug
+    if (!resolvedParams?.slug) return { title: 'Not Found' };
+
     const post = await prisma.blogPost.findUnique({
-        where: { slug: params.slug },
+        where: { slug: resolvedParams.slug },
     });
 
     if (!post) return { title: 'Not Found' };
@@ -30,9 +34,14 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     };
 }
 
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+    const resolvedParams = await params;
+
+    // Safety check for slug
+    if (!resolvedParams?.slug) notFound();
+
     const post = await prisma.blogPost.findUnique({
-        where: { slug: params.slug },
+        where: { slug: resolvedParams.slug },
         include: {
             author: true,
             categories: true,
@@ -44,6 +53,10 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         notFound();
     }
 
+    const postedDate = post.publishedAt ? new Date(post.publishedAt) : new Date();
+    const authorName = post.author?.name || 'Unknown Author';
+    const authorImage = post.author?.image;
+
     // JSON-LD Structured Data
     const jsonLd = {
         '@context': 'https://schema.org',
@@ -54,7 +67,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         dateModified: post.updatedAt.toISOString(),
         author: [{
             '@type': 'Person',
-            name: post.author.name,
+            name: authorName,
         }]
     };
 
@@ -75,30 +88,30 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
                 <header className="mb-12 text-center space-y-6">
                     {/* Categories */}
-                    <div className="flex justify-center gap-2">
-                        {post.categories.map((cat: any) => (
+                    <div className="flex justify-center gap-2 flex-wrap">
+                        {post.categories?.map((cat: any) => (
                             <span key={cat.id} className="text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-3 py-1 rounded-full">
                                 {cat.name}
                             </span>
                         ))}
                     </div>
 
-                    <h1 className="text-4xl md:text-6xl font-black leading-tight">
+                    <h1 className="text-4xl md:text-6xl font-black leading-tight break-words">
                         {post.title}
                     </h1>
 
                     <div className="flex items-center justify-center gap-4 text-text-secondary">
                         <div className="flex items-center gap-2">
-                            {post.author.image && (
+                            {authorImage && (
                                 <div className="relative w-8 h-8 rounded-full overflow-hidden">
-                                    <Image src={post.author.image} alt={post.author.name || 'Author'} fill className="object-cover" />
+                                    <Image src={authorImage} alt={authorName} fill className="object-cover" />
                                 </div>
                             )}
-                            <span className="font-medium text-white">{post.author.name}</span>
+                            <span className="font-medium text-white">{authorName}</span>
                         </div>
                         <span>•</span>
                         <time>
-                            {post.publishedAt ? format(new Date(post.publishedAt), 'MMMM d, yyyy') : 'Draft'}
+                            {post.publishedAt ? format(postedDate, 'MMMM d, yyyy') : 'Draft'}
                         </time>
                     </div>
                 </header>
@@ -109,7 +122,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                     </div>
                 )}
 
-                <div className="prose prose-invert prose-lg max-w-none mx-auto">
+                <div className="prose prose-invert prose-lg max-w-none mx-auto bg-transparent">
                     {/* 
                         Ideally use a markdown renderer here like 'react-markdown' or 'remark'.
                         For now, assuming safe HTML or raw text.
@@ -119,11 +132,11 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                 </div>
 
                 {/* Tags Footer */}
-                {post.tags.length > 0 && (
+                {post.tags?.length > 0 && (
                     <div className="mt-16 pt-8 border-t border-border">
                         <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-4">Tags</h3>
                         <div className="flex flex-wrap gap-2">
-                            {post.tags.map(tag => (
+                            {post.tags.map((tag: any) => (
                                 <span key={tag.id} className="bg-surface border border-border px-3 py-1 rounded-lg text-sm text-text-secondary hover:text-white hover:border-primary transition-colors cursor-pointer">
                                     #{tag.name}
                                 </span>
