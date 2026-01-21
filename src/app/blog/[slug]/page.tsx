@@ -39,19 +39,21 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 // Simple ad injection utility
 // Splits content by </p> and inserts ad HTML after every few paragraphs
-function injectAds(htmlContent: string) {
-    if (!htmlContent) return [];
+// Simple ad injection utility
+// Handles HTML (<p>) and Plain Text (newlines)
+function injectAds(content: string) {
+    if (!content) return [];
 
-    // We can't render the React Component directly into the HTML string easily without ReactDOMServer
-    // So we'll split the content into chunks and render them interspersed with the Ad Component in the JSX return.
+    // Check if HTML
+    if (content.includes('</p>')) {
+        const paragraphs = content.split('</p>');
+        return paragraphs.map((p) => {
+            return p.trim() ? `${p}</p>` : '';
+        }).filter(Boolean);
+    }
 
-    // Split by closing paragraph tag
-    const paragraphs = htmlContent.split('</p>');
-    return paragraphs.map((p, i) => {
-        // Add the closing tag back if it's not the last empty split
-        const content = p.trim() ? `${p}</p>` : '';
-        return content;
-    }).filter(Boolean);
+    // Fallback for plain text: split by double newline
+    return content.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean).map(p => `<p>${p}</p>`);
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -198,19 +200,19 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                                 <div dangerouslySetInnerHTML={{ __html: chunk }} />
 
                                 {/* Injection Logic */}
-                                {index === 1 && (
+                                {index === 0 && contentChunks.length > 2 && (
                                     <div className="not-prose my-8">
                                         <AdBanner />
                                     </div>
                                 )}
 
-                                {index === 4 && (
+                                {index === 2 && (
                                     <div className="not-prose my-12">
                                         <BlogCTA />
                                     </div>
                                 )}
 
-                                {index === 7 && (
+                                {index === 6 && (
                                     <div className="not-prose my-8">
                                         <AdBanner />
                                     </div>
@@ -218,12 +220,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                             </React.Fragment>
                         ))}
 
-                        {/* Final CTA if long post */}
-                        {contentChunks.length > 10 && (
-                            <div className="not-prose mt-12">
-                                <BlogCTA />
-                            </div>
-                        )}
+                        {/* Final CTA - Always show at the bottom of content */}
+                        <div className="not-prose mt-12 mb-8">
+                            <BlogCTA />
+                        </div>
                     </div>
 
                     {/* Tags */}
