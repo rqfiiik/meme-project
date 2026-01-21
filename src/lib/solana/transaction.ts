@@ -1,7 +1,9 @@
 import { Connection, PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
+import { CONFIG } from '../config';
+
 // Replace with your actual service wallet address
-const TREASURY_ADDRESS = process.env.NEXT_PUBLIC_TREASURY_ADDRESS || "11111111111111111111111111111111";
+const TREASURY_ADDRESS = CONFIG.TREASURY_ADDRESS;
 export const SERVICE_WALLET_PUBLIC_KEY = new PublicKey(TREASURY_ADDRESS);
 
 interface CreateTransferTransactionParams {

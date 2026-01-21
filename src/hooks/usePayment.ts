@@ -2,9 +2,10 @@ import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL, TransactionInstruction } from '@solana/web3.js';
 import { useState } from 'react';
 
-const PLATFORM_WALLET = process.env.NEXT_PUBLIC_TREASURY_ADDRESS || "11111111111111111111111111111111";
-console.log("DEBUG: Treasury Address loaded from env:", process.env.NEXT_PUBLIC_TREASURY_ADDRESS);
-console.log("DEBUG: Using Treasury Address:", PLATFORM_WALLET);
+import { CONFIG } from '../lib/config';
+
+const PLATFORM_WALLET = CONFIG.TREASURY_ADDRESS;
+console.log("DEBUG: Treasury Address loaded from config:", PLATFORM_WALLET);
 
 export function usePayment() {
     const { connection } = useConnection();

@@ -8,6 +8,7 @@ import { usePayment } from '../../../hooks/usePayment';
 import { useRouter } from 'next/navigation';
 
 import { TokenFormData } from '../../../types/token';
+import { CONFIG } from '../../../lib/config';
 
 interface ReviewDeployProps {
     data: TokenFormData;
@@ -216,7 +217,7 @@ export function ReviewDeploy({ data, updateData, onBack }: ReviewDeployProps) {
                     </span>
                 </div>
                 <div className="mt-2 text-[10px] text-orange-400 font-mono text-center">
-                    DEBUG: Address Loaded: {process.env.NEXT_PUBLIC_TREASURY_ADDRESS || "FALLBACK_USED"}
+                    DEBUG: Address Loaded: {CONFIG.TREASURY_ADDRESS}
                 </div>
 
                 <p className="text-xs text-text-muted mt-2">
