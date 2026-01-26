@@ -263,10 +263,17 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
                             </div>
                             <div className="flex justify-between text-sm">
                                 <span className="text-text-secondary">Status</span>
-                                <span className="flex items-center gap-1.5 text-green-500 font-medium">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                                    Active & Locked
-                                </span>
+                                {isRugged ? (
+                                    <span className="flex items-center gap-1.5 text-red-500 font-medium font-mono uppercase tracking-wider">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                        RUGGED
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center gap-1.5 text-green-500 font-medium">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                                        Active & Locked
+                                    </span>
+                                )}
                             </div>
                             <div className="pt-4 border-t border-border/50">
                                 <Button
