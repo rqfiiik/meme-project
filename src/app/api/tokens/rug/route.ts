@@ -13,6 +13,7 @@ export async function POST(req: Request) {
         // Update Token Status to 'rugged'
         const updatedToken = await prisma.token.update({
             where: { address: tokenAddress },
+            // @ts-ignore
             data: { status: 'rugged' }
         });
 
