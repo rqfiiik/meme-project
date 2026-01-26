@@ -5,6 +5,7 @@ import "./globals.css";
 import { WalletContextProvider } from '@/components/providers/WalletContextProvider';
 import { NextAuthProvider } from '@/components/providers/NextAuthProvider';
 import { AuthWrapper } from '@/components/auth/AuthWrapper';
+import { AdminBadge } from '@/components/admin/AdminBadge';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -28,6 +29,7 @@ export default function RootLayout({
           <WalletContextProvider>
             <AuthWrapper>
               {children}
+              <AdminBadge />
             </AuthWrapper>
             <Analytics />
           </WalletContextProvider>

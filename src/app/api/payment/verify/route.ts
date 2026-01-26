@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { Connection, PublicKey } from "@solana/web3.js";
+import { isUserAdmin } from "@/lib/admin";
 
 // TODO: Move to env
 const PLATFORM_WALLET = process.env.NEXT_PUBLIC_PLATFORM_WALLET_ADDRESS || "CNM...DEVNET_ADDRESS";
@@ -20,6 +21,42 @@ export async function POST(req: Request) {
         if (!signature || !amount || !type) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
+
+        // --- ADMIN BYPASS START ---
+        if (isUserAdmin(session.user)) {
+            // Log Admin Action
+            await prisma.adminLog.create({
+                data: {
+                    adminId: session.user.id,
+                    action: "PAYMENT_BYPASS",
+                    targetId: signature === 'bypass' ? 'bypass-tx' : signature,
+                    details: JSON.stringify({ amount, type, memo })
+                }
+            });
+
+            // If it's a bypass signature or just admin doing it, we approve.
+            // But we should simulate the transaction record for consistency if needed, 
+            // or just return success.
+            // Let's create a transaction record so stats work.
+            const txId = signature === 'bypass' ? `bypass-${Date.now()}` : signature;
+
+            try {
+                await prisma.transaction.create({
+                    data: {
+                        signature: txId,
+                        amount: parseFloat(amount),
+                        userId: session.user.id,
+                        status: "success",
+                        type: type || "admin_bypass"
+                    }
+                });
+            } catch (e) {
+                // Ignore if duplicate bypass attempt
+            }
+
+            return NextResponse.json({ success: true, bypass: true });
+        }
+        // --- ADMIN BYPASS END ---
 
         // 1. Verify Transaction on Chain
         const connection = new Connection(RPC_URL, "confirmed");
