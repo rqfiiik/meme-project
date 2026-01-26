@@ -1,12 +1,16 @@
 import { Header } from '@/components/layout/Header';
 import { CreatePoolWizard } from '@/components/create-pool/CreatePoolWizard';
 
+import { Suspense } from 'react';
+
 export default function CreateLiquidityPoolPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto px-4">
-        <CreatePoolWizard />
+        <Suspense fallback={<div className="text-white text-center py-20">Loading...</div>}>
+          <CreatePoolWizard />
+        </Suspense>
       </main>
 
       {/* Background decoration */}
