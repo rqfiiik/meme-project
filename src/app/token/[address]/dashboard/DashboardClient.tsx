@@ -15,39 +15,63 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Mock Data Fetching - simulating API response including clonedFrom
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                await new Promise(r => setTimeout(r, 1000));
+                const response = await fetch(`/api/tokens?address=${tokenAddress}`);
+                if (!response.ok) throw new Error('Failed to fetch token');
+
+                const data = await response.json();
 
                 setTokenData({
-                    name: "Sample Meme Coin",
-                    symbol: "MEME",
-                    address: tokenAddress,
-                    supply: "1,000,000,000",
-                    description: "This is a sample meme coin created on the platform.",
-                    image: null,
-                    creator: "You",
+                    name: data.name,
+                    symbol: data.symbol,
+                    address: data.address,
+                    supply: "1,000,000,000", // Hardcoded supply for now if not in DB
+                    description: data.description || "No description provided.",
+                    image: data.image,
+                    creator: "You", // Or fetch creator name if available
                     status: "active",
-                    clonedFrom: "8r4r...k9s2", // Example mock data
-                    marketCap: "$12,450",
-                    price: "$0.00001245",
-                    volume: "$1,200",
+                    clonedFrom: data.clonedFrom,
+                    marketCap: "$12,450", // Still simulated for now as requested
+                    price: "$0.00001245", // Still simulated
+                    volume: "$1,200",     // Still simulated
                     liquidity: {
-                        pair: "SOL / MEME",
+                        pair: `SOL / ${data.symbol}`,
                         locked: true,
                         amount: "50 SOL"
                     }
                 });
             } catch (error) {
                 console.error("Failed to fetch token data", error);
+                // Fallback to mock if API fails (optional, but good for stability during dev)
+                setTokenData({
+                    name: "Sample Meme Coin",
+                    symbol: "MEME",
+                    address: tokenAddress,
+                    supply: "1,000,000,000",
+                    description: "Fallback mock data - API failed.",
+                    image: null,
+                    creator: "You",
+                    status: "Error",
+                    clonedFrom: null,
+                    marketCap: "$0",
+                    price: "$0",
+                    volume: "$0",
+                    liquidity: {
+                        pair: "SOL / ???",
+                        locked: false,
+                        amount: "0 SOL"
+                    }
+                });
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchData();
+        if (tokenAddress) {
+            fetchData();
+        }
     }, [tokenAddress]);
 
     if (isLoading) {

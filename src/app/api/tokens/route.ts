@@ -62,4 +62,26 @@ export async function POST(req: Request) {
         console.error('Error creating token:', error);
         return NextResponse.json({ error: 'Failed to create token' }, { status: 500 });
     }
-}
+    export async function GET(req: Request) {
+        const { searchParams } = new URL(req.url);
+        const address = searchParams.get('address');
+
+        if (!address) {
+            return NextResponse.json({ error: 'Address is required' }, { status: 400 });
+        }
+
+        try {
+            const token = await prisma.token.findFirst({
+                where: { address: address },
+            });
+
+            if (!token) {
+                return NextResponse.json({ error: 'Token not found' }, { status: 404 });
+            }
+
+            return NextResponse.json(token);
+        } catch (error) {
+            console.error('Error fetching token:', error);
+            return NextResponse.json({ error: 'Failed to fetch token' }, { status: 500 });
+        }
+    }

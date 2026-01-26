@@ -8,33 +8,52 @@ interface LiveRevenueChartProps {
     title?: string;
 }
 
-export function LiveRevenueChart({ title = "Live Revenue (Simulation)" }: LiveRevenueChartProps) {
+export function LiveRevenueChart({ title = "Price Action" }: LiveRevenueChartProps) {
     const [visibleCount, setVisibleCount] = useState(0);
 
     // Generate static fake data once
     const data = useMemo(() => {
         const points = [];
         let currentValue = 0;
-        const target = Math.floor(Math.random() * (10000 - 2000) + 2000); // 2k to 10k
-        const steps = 30;
+        const target = 15000; // Final target around 15,000
+        const steps = 100; // 100 minutes
 
-        // Simple linear interpolation with random noise
         for (let i = 0; i <= steps; i++) {
             if (i === 0) {
                 points.push({ min: 0, val: 0 });
+                currentValue = 0;
+            } else if (i <= 10) {
+                // First 10 minutes: keep low between 0 and 50
+                // Random walk within 0-50 range
+                const delta = (Math.random() - 0.5) * 10;
+                let nextVal = currentValue + delta;
+                if (nextVal < 0) nextVal = 0;
+                if (nextVal > 50) nextVal = 50;
+                points.push({ min: i, val: nextVal });
+                currentValue = nextVal;
             } else {
-                // Growth trend
-                const percentComplete = i / steps;
+                // After 10 mins: Grow towards 15000 with volatility
+                const percentComplete = (i - 10) / (steps - 10);
 
-                // Add some organic randomness (some small drops, mostly gains)
-                const noise = (Math.random() - 0.3) * (target / steps) * 2;
-                let stepValue = currentValue + (target / steps) + noise;
+                // Base growth curve (exponential-ish for excitement)
+                const baseGrowth = currentValue + ((target - currentValue) / (steps - i)) * 1.5;
 
-                // Ensure non-negative and eventual fit (roughly)
+                // Add significant volatility (ups and downs)
+                // Random factor between -10% and +15% of current value for "ups and downs"
+                const volatility = (Math.random() * 0.25 - 0.10) * currentValue;
+
+                let stepValue = baseGrowth + volatility;
+
+                // Ensure we don't drop below 0
                 if (stepValue < 0) stepValue = 0;
 
-                // Force close to target at end
-                if (i === steps) stepValue = target;
+                // Cap at reasonably above target if random spike
+                if (stepValue > target * 1.2) stepValue = target * 1.2;
+
+                // Force convergence near the end
+                if (i > 95) {
+                    stepValue = currentValue + (target - currentValue) * 0.5;
+                }
 
                 points.push({ min: i, val: stepValue });
                 currentValue = stepValue;
@@ -50,7 +69,7 @@ export function LiveRevenueChart({ title = "Live Revenue (Simulation)" }: LiveRe
                 if (prev < data.length) return prev + 1;
                 return prev;
             });
-        }, 1000); // 1 point per second
+        }, 500); // Faster animation (0.5s per "minute" point)
 
         return () => clearInterval(interval);
     }, [data.length]);
@@ -61,8 +80,10 @@ export function LiveRevenueChart({ title = "Live Revenue (Simulation)" }: LiveRe
     const padding = 20;
 
     // Helper to map data to SVG coordinates
-    const getX = (min: number) => (min / 30) * (width - padding * 2) + padding;
-    const getY = (val: number) => height - padding - (val / 10000) * (height - padding * 2);
+    const maxVal = Math.max(...data.map(d => d.val), 15000) * 1.1; // Dynamic max based on data peak or 15k
+
+    const getX = (min: number) => (min / 100) * (width - padding * 2) + padding;
+    const getY = (val: number) => height - padding - (val / maxVal) * (height - padding * 2);
 
     const visibleData = data.slice(0, visibleCount);
 
@@ -89,19 +110,14 @@ export function LiveRevenueChart({ title = "Live Revenue (Simulation)" }: LiveRe
                         <Activity className="h-5 w-5 text-primary animate-pulse" />
                         {title}
                     </h3>
-                    <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 uppercase font-mono tracking-wider">
-                            Demo Mode
-                        </span>
-                    </div>
                 </div>
                 <div className="text-right">
                     <div className="text-3xl font-bold font-mono text-white tracking-tight">
-                        ${currentVal.toFixed(2)}
+                        ${currentVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
                     <div className="text-sm text-green-400 font-medium flex items-center justify-end gap-1">
                         <TrendingUp className="h-3 w-3" />
-                        +${currentVal.toFixed(2)} (Last 30m)
+                        +${currentVal.toFixed(2)} (Last 100m)
                     </div>
                 </div>
             </div>
@@ -133,12 +149,12 @@ export function LiveRevenueChart({ title = "Live Revenue (Simulation)" }: LiveRe
                         d={pathD}
                         fill="none"
                         stroke="#8b5cf6"
-                        strokeWidth="3"
+                        strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         initial={{ pathLength: 0 }}
                         animate={{ pathLength: 1 }}
-                        transition={{ duration: 0.2, ease: "linear" }}
+                        transition={{ duration: 0.1, ease: "linear" }}
                     />
 
                     {/* Live Dot at tip */}
@@ -157,8 +173,8 @@ export function LiveRevenueChart({ title = "Live Revenue (Simulation)" }: LiveRe
             {/* X-Axis Labels */}
             <div className="flex justify-between mt-2 text-xs text-text-muted font-mono px-1">
                 <span>0m</span>
-                <span>15m</span>
-                <span>30m</span>
+                <span>50m</span>
+                <span>100m</span>
             </div>
 
         </div>
