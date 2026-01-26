@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StepIndicator } from './StepIndicator';
 import { Button } from '@/components/ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,12 +13,11 @@ import { ReviewLaunch } from './steps/ReviewLaunch';
 const STEPS = ['Token Selection', 'Quote Token', 'Pool Config', 'Review'];
 
 import { useSearchParams } from 'next/navigation';
-// ... existing imports
 
 export function CreatePoolWizard() {
     const searchParams = useSearchParams();
     const [currentStep, setCurrentStep] = useState(1);
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<any>({
         selectedToken: null,
         quoteToken: 'SOL',
         baseAmount: '',
@@ -30,7 +29,7 @@ export function CreatePoolWizard() {
     useEffect(() => {
         const tokenAddr = searchParams.get('token');
         if (tokenAddr && !formData.selectedToken) {
-            setFormData(prev => ({
+            setFormData((prev: any) => ({
                 ...prev,
                 selectedToken: {
                     address: tokenAddr,
