@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ success: true, rugged: true });
 
-        return NextResponse.json({ success: true, token: updatedToken });
+
     } catch (error) {
         console.error('Error rugging token:', error);
         return NextResponse.json({ error: 'Failed to rug token' }, { status: 500 });
