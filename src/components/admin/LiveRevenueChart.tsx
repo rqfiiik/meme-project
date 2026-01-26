@@ -4,7 +4,11 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, TrendingUp } from 'lucide-react';
 
-export function LiveRevenueChart() {
+interface LiveRevenueChartProps {
+    title?: string;
+}
+
+export function LiveRevenueChart({ title = "Live Revenue (Simulation)" }: LiveRevenueChartProps) {
     const [visibleCount, setVisibleCount] = useState(0);
 
     // Generate static fake data once
@@ -83,7 +87,7 @@ export function LiveRevenueChart() {
                 <div>
                     <h3 className="text-lg font-bold text-white flex items-center gap-2">
                         <Activity className="h-5 w-5 text-primary animate-pulse" />
-                        Live Revenue (Simulation)
+                        {title}
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 uppercase font-mono tracking-wider">
