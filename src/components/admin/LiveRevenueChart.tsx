@@ -157,17 +157,23 @@ export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, 
 
     if (isRugged) {
         // If rugged, we effectively want to show a sharp drop to 0 from the last point
-        // We append a point that is [current_min + 0.1, 0]
+        // We append a point that is [current_min + 1, 0]
         if (visibleData.length > 0) {
             const last = visibleData[visibleData.length - 1];
             visibleData = [
                 ...visibleData,
-                { min: last.min + 1, val: 0 } // Drop to zero in next virtual minute
+                { min: last.min + 1, val: 0 } // Drop to zero
             ];
             currentVal = 0;
-            if (onUpdate) onUpdate(0, visibleCount + 1); // Notify parent of 0
         }
     }
+
+    // Side Effect for Rug Pull Sync
+    useEffect(() => {
+        if (isRugged && onUpdate) {
+            onUpdate(0, visibleCount + 1);
+        }
+    }, [isRugged, onUpdate, visibleCount]);
 
     // Create Path 'd' attribute
     const pathD = visibleData.length > 0
