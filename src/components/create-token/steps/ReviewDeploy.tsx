@@ -89,8 +89,14 @@ export function ReviewDeploy({ data, updateData, onBack }: ReviewDeployProps) {
             // Mock delay for minting simulation
             await new Promise(resolve => setTimeout(resolve, 2000));
 
-            // Redirect to Liquidity Pool Creation
-            router.push(`/create-liquidity-pool?token=${mintKeypair.publicKey.toString()}`);
+            // Redirect to Liquidity Pool Creation with pre-filled details
+            const params = new URLSearchParams({
+                token: mintKeypair.publicKey.toString(),
+                name: data.name,
+                symbol: data.symbol,
+                image: data.imagePreview || ''
+            });
+            router.push(`/create-liquidity-pool?${params.toString()}`);
 
         } catch (error: any) {
             console.error(error);

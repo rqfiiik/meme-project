@@ -12,7 +12,11 @@ import { ReviewLaunch } from './steps/ReviewLaunch';
 
 const STEPS = ['Token Selection', 'Quote Token', 'Pool Config', 'Review'];
 
+import { useSearchParams } from 'next/navigation';
+// ... existing imports
+
 export function CreatePoolWizard() {
+    const searchParams = useSearchParams();
     const [currentStep, setCurrentStep] = useState(1);
     const [formData, setFormData] = useState({
         selectedToken: null,
@@ -21,6 +25,25 @@ export function CreatePoolWizard() {
         quoteAmount: '',
         startTime: 'now'
     });
+
+    // Hydrate from URL
+    useEffect(() => {
+        const tokenAddr = searchParams.get('token');
+        if (tokenAddr && !formData.selectedToken) {
+            setFormData(prev => ({
+                ...prev,
+                selectedToken: {
+                    address: tokenAddr,
+                    name: searchParams.get('name') || 'Unknown Token',
+                    symbol: searchParams.get('symbol') || 'UNK',
+                    image: searchParams.get('image') || null
+                }
+            }));
+            // Optionally auto-advance to step 2 if token is provided? 
+            // setCurrentStep(2); 
+            // User might want to verify Step 1 first.
+        }
+    }, [searchParams]);
 
     const updateData = (newData: any) => setFormData(prev => ({ ...prev, ...newData }));
     const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, STEPS.length));
