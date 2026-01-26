@@ -44,7 +44,7 @@ export function CreatePoolWizard() {
         }
     }, [searchParams]);
 
-    const updateData = (newData: any) => setFormData(prev => ({ ...prev, ...newData }));
+    const updateData = (newData: any) => setFormData((prev: any) => ({ ...prev, ...newData }));
     const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, STEPS.length));
     const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
