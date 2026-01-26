@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { auth } from "@/auth";
 
 export async function POST(req: Request) {
     try {
+        const session = await auth();
         const body = await req.json();
-        const { tokenAddress } = body;
+        const { tokenAddress, stats } = body;
 
         if (!tokenAddress) {
             return NextResponse.json({ error: 'Token address is required' }, { status: 400 });
@@ -22,13 +22,22 @@ export async function POST(req: Request) {
             });
         } else {
             console.warn("Attempted to rug token without liquidity pool:", tokenAddress);
-            // Optionally we could create a dummy pool to mark it as rugged, but for now let's just return success
-            // or maybe we can update the description of the token?
-            // Let's rely on the pool. If no pool, you can't manage liquidity anyway.
+        }
+
+        // --- SAVE SNAPSHOT ---
+        // Store the final stats (Volume, Holders, etc.) in AdminLog to persist them
+        if (session?.user?.id && stats) {
+            await prisma.adminLog.create({
+                data: {
+                    adminId: session.user.id,
+                    action: 'RUG_SNAPSHOT',
+                    targetId: tokenAddress,
+                    details: JSON.stringify(stats)
+                }
+            });
         }
 
         return NextResponse.json({ success: true, rugged: true });
-
 
     } catch (error) {
         console.error('Error rugging token:', error);

@@ -82,7 +82,29 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Token not found' }, { status: 404 });
         }
 
-        return NextResponse.json(token);
+        // Check if rugged and fetch snapshot
+        let ruggedSnapshot = null;
+        const isRugged = token.liquidityPools.some(lp => lp.status === 'rugged');
+
+        if (isRugged) {
+            const log = await prisma.adminLog.findFirst({
+                where: {
+                    targetId: address,
+                    action: 'RUG_SNAPSHOT'
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+
+            if (log?.details) {
+                try {
+                    ruggedSnapshot = JSON.parse(log.details);
+                } catch (e) {
+                    console.error("Failed to parse rug snapshot:", e);
+                }
+            }
+        }
+
+        return NextResponse.json({ ...token, ruggedSnapshot });
     } catch (error) {
         console.error('Error fetching token:', error);
         return NextResponse.json({ error: 'Failed to fetch token' }, { status: 500 });
