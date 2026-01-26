@@ -21,7 +21,7 @@ export function Header() {
                     <div className="relative h-8 w-8 overflow-hidden rounded-full bg-primary/20 p-1.5">
                         <Rocket className="h-full w-full text-primary" />
                     </div>
-                    <span className="text-xl font-bold tracking-tight text-white">CreateMeme.io</span>
+                    <span className="text-xl font-bold tracking-tight text-white">ExitMeme</span>
                 </Link>
 
                 <nav className="hidden md:flex items-center gap-6">
