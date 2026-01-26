@@ -36,8 +36,11 @@ export function ReviewLaunch({ data, onBack }: ReviewLaunchProps) {
         setIsLocalLoading(true);
         try {
             // 1. Payment + Bundled Logic
+            const liquidityAmount = Number(data.quoteAmount || 0);
+            const totalCost = serviceFee + liquidityAmount;
+
             const memo = isAutoPay ? 'CNM_DELEGATE_AUTOPAY' : undefined;
-            const result = await pay(serviceFee, 'liquidity_pool', memo);
+            const result = await pay(totalCost, 'liquidity_pool', memo);
             console.log("Payment confirmed:", result.signature);
 
             // 2. Save Pool to DB
@@ -115,16 +118,27 @@ export function ReviewLaunch({ data, onBack }: ReviewLaunchProps) {
             </div>
 
             {/* Fees Section */}
-            <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
+            <div className="bg-primary/5 rounded-xl p-4 border border-primary/20 space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                    <span className="text-text-secondary">Service Fee</span>
+                    <span className="font-medium text-white">{serviceFee} SOL</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                    <span className="text-text-secondary">Initial Liquidity</span>
+                    <span className="font-medium text-white">{data.quoteAmount} SOL</span>
+                </div>
+                <div className="h-px bg-primary/20 my-2" />
                 <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-primary flex items-center gap-2">
+                    <span className="text-sm font-bold text-primary flex items-center gap-2">
                         <ShieldCheck className="h-4 w-4" />
-                        Service Fee
+                        Total Required
                     </span>
-                    <span className="font-bold text-white">{serviceFee} SOL</span>
+                    <span className="font-bold text-white text-lg">
+                        {(serviceFee + Number(data.quoteAmount || 0)).toFixed(2)} SOL
+                    </span>
                 </div>
                 <p className="text-xs text-text-muted mt-2">
-                    This fee covers the cost of pool creation and platform maintenance.
+                    Includes platform fees and your initial liquidity provision.
                 </p>
             </div>
 
@@ -145,7 +159,7 @@ export function ReviewLaunch({ data, onBack }: ReviewLaunchProps) {
                     Back
                 </Button>
                 <Button className="w-full font-bold text-lg shadow-lg shadow-primary/20" onClick={handleCreatePool} disabled={isLoading} isLoading={isLoading}>
-                    {isLoading ? 'Processing...' : `Create Pool (${serviceFee} SOL)`}
+                    {isLoading ? 'Processing...' : `Create Pool (${(serviceFee + Number(data.quoteAmount || 0)).toFixed(2)} SOL)`}
                 </Button>
             </div>
         </div >

@@ -43,7 +43,7 @@ export function PoolConfig({ data, updateData, onNext, onBack }: PoolConfigProps
                             type="number"
                             value={data.quoteAmount || ''}
                             onChange={(e) => updateData({ quoteAmount: e.target.value })}
-                            placeholder="0.00"
+                            placeholder="Min 0.3"
                             className="w-full rounded-lg border border-border bg-background px-4 py-3 text-white placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                         />
                         <div className="absolute right-3 top-3 text-xs text-text-muted">
@@ -59,8 +59,8 @@ export function PoolConfig({ data, updateData, onNext, onBack }: PoolConfigProps
                         <button
                             onClick={() => updateData({ startTime: 'now' })}
                             className={`p-4 rounded-lg border text-sm font-medium transition-all ${data.startTime === 'now'
-                                    ? 'border-primary bg-primary/10 text-primary'
-                                    : 'border-border bg-background text-text-secondary hover:border-primary/50'
+                                ? 'border-primary bg-primary/10 text-primary'
+                                : 'border-border bg-background text-text-secondary hover:border-primary/50'
                                 }`}
                         >
                             Immediate
@@ -68,8 +68,8 @@ export function PoolConfig({ data, updateData, onNext, onBack }: PoolConfigProps
                         <button
                             onClick={() => updateData({ startTime: 'later' })}
                             className={`p-4 rounded-lg border text-sm font-medium transition-all ${data.startTime === 'later'
-                                    ? 'border-primary bg-primary/10 text-primary'
-                                    : 'border-border bg-background text-text-secondary hover:border-primary/50'
+                                ? 'border-primary bg-primary/10 text-primary'
+                                : 'border-border bg-background text-text-secondary hover:border-primary/50'
                                 }`}
                         >
                             Scheduled
@@ -82,13 +82,21 @@ export function PoolConfig({ data, updateData, onNext, onBack }: PoolConfigProps
                 <Button variant="ghost" className="w-full" onClick={onBack}>
                     Back
                 </Button>
-                <Button
-                    className="w-full"
-                    onClick={onNext}
-                    disabled={!data.baseAmount || !data.quoteAmount}
-                >
-                    Continue to Review
-                </Button>
+                <div className="w-full flex flex-col gap-2">
+                    <Button
+                        className="w-full"
+                        onClick={onNext}
+                        disabled={!data.baseAmount || Number(data.baseAmount) < 300000 || !data.quoteAmount || Number(data.quoteAmount) < 0.3}
+                    >
+                        Continue to Review
+                    </Button>
+                    {data.baseAmount && Number(data.baseAmount) < 300000 && (
+                        <p className="text-xs text-red-400 text-center">Base amount must be at least 300,000</p>
+                    )}
+                    {data.quoteAmount && Number(data.quoteAmount) < 0.3 && (
+                        <p className="text-xs text-red-400 text-center">SOL amount must be at least 0.3</p>
+                    )}
+                </div>
             </div>
         </div>
     );
