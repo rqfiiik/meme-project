@@ -19,6 +19,7 @@ interface Token {
     address: string;
     image: string | null;
     createdAt: Date;
+    status?: string;
 }
 
 export function DashboardModal({ isOpen, onClose, user }: DashboardModalProps) {
@@ -201,7 +202,14 @@ export function DashboardModal({ isOpen, onClose, user }: DashboardModalProps) {
                                                                 </div>
                                                             )}
                                                             <div>
-                                                                <div className="font-medium text-white">{token.name}</div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="font-medium text-white">{token.name}</div>
+                                                                    {token.status === 'rugged' && (
+                                                                        <span className="px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] uppercase font-bold tracking-wider">
+                                                                            Rugged
+                                                                        </span>
+                                                                    )}
+                                                                </div>
                                                                 <div className="text-xs text-text-muted">{token.symbol}</div>
                                                             </div>
                                                         </div>

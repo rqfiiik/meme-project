@@ -20,6 +20,7 @@ export async function GET(req: Request) {
             prisma.token.findMany({
                 where: { creatorId: session.user.id },
                 orderBy: { createdAt: 'desc' },
+                include: { liquidityPools: true }
             }),
             prisma.transaction.findMany({
                 where: { userId: session.user.id, status: 'success' },
@@ -38,7 +39,10 @@ export async function GET(req: Request) {
         const totalFeesPaid = transactions.reduce((acc: number, tx: any) => acc + tx.amount, 0);
 
         return NextResponse.json({
-            tokens,
+            tokens: tokens.map(t => ({
+                ...t,
+                status: t.liquidityPools?.[0]?.status === 'rugged' ? 'rugged' : 'active'
+            })),
             wallets,
             subscriptions,
             stats: {
