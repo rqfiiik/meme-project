@@ -14,6 +14,36 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
     const [tokenData, setTokenData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Dynamic Stats State
+    const [liveStats, setLiveStats] = useState({
+        price: 0,
+        marketCap: 0,
+        volume: 1200, // Initial volume
+        holders: 1
+    });
+
+    const handleChartUpdate = (price: number, step: number) => {
+        setLiveStats(prev => {
+            const currentMarketCap = price; // The chart value IS the market cap
+
+            // Volume simulation: Add random volume based on price movement magnitude
+            const volumeAdd = Math.random() * (price * 0.05);
+            const newVolume = prev.volume + (volumeAdd > 0 ? volumeAdd : 0);
+
+            // Holders simulation
+            let newHolders = prev.holders;
+            if (price > 100 && Math.random() > 0.8) newHolders += 1;
+            if (price > 1000 && Math.random() > 0.5) newHolders += Math.floor(Math.random() * 3);
+
+            return {
+                price: price / 1_000_000_000,
+                marketCap: currentMarketCap,
+                volume: newVolume,
+                holders: newHolders
+            };
+        });
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
@@ -112,21 +142,27 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
                 {/* Main Chart Area (Left - 2cols) */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Live Chart */}
-                    <LiveRevenueChart title="Price Action" />
+                    <LiveRevenueChart title="Price Action" onUpdate={handleChartUpdate} />
 
                     {/* Quick Stats */}
                     <div className="grid grid-cols-3 gap-4">
                         <div className="p-4 rounded-xl border border-border bg-surface/30">
                             <div className="text-xs text-text-secondary uppercase">Market Cap</div>
-                            <div className="text-xl font-bold text-white mt-1">{tokenData.marketCap}</div>
+                            <div className="text-xl font-bold text-white mt-1">
+                                ${liveStats.marketCap.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                            </div>
                         </div>
                         <div className="p-4 rounded-xl border border-border bg-surface/30">
                             <div className="text-xs text-text-secondary uppercase">24h Volume</div>
-                            <div className="text-xl font-bold text-white mt-1">{tokenData.volume}</div>
+                            <div className="text-xl font-bold text-white mt-1">
+                                ${liveStats.volume.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                            </div>
                         </div>
                         <div className="p-4 rounded-xl border border-border bg-surface/30">
                             <div className="text-xs text-text-secondary uppercase">Holders</div>
-                            <div className="text-xl font-bold text-white mt-1">1</div>
+                            <div className="text-xl font-bold text-white mt-1">
+                                {liveStats.holders}
+                            </div>
                         </div>
                     </div>
                 </div>
