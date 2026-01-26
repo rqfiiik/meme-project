@@ -8,6 +8,25 @@ interface TokenSelectionProps {
 }
 
 export function TokenSelection({ data, updateData, onNext }: TokenSelectionProps) {
+
+    const handleSelectMock = (symbol: string) => {
+        updateData({
+            selectedToken: {
+                name: symbol === 'MEME' ? "Sample Meme Coin" : `${symbol} Coin`,
+                symbol: symbol,
+                address: symbol === 'MEME' ? "8r4r...k9s2" : `mock-${symbol.toLowerCase()}-address` // Use consistent address for MEME mock
+            }
+        });
+    };
+
+    const handleContinue = () => {
+        // If nothing selected, select default MEME for testing
+        if (!data.selectedToken) {
+            handleSelectMock('MEME');
+        }
+        onNext();
+    };
+
     return (
         <div className="space-y-6">
             <div className="space-y-2">
@@ -26,23 +45,30 @@ export function TokenSelection({ data, updateData, onNext }: TokenSelectionProps
             <div className="grid gap-2">
                 <p className="text-sm font-medium text-text-secondary">Popular Tokens</p>
                 <div className="flex flex-wrap gap-2">
-                    {['WIF', 'BONK', 'JUP', 'WEN'].map((token) => (
+                    {['MEME', 'WIF', 'BONK', 'JUP'].map((token) => (
                         <button
                             key={token}
-                            className="rounded-full border border-border bg-surface px-4 py-1.5 text-sm font-medium text-text-secondary hover:border-primary hover:text-white transition-colors"
+                            onClick={() => handleSelectMock(token)}
+                            className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${data.selectedToken?.symbol === token
+                                    ? "border-primary bg-primary/20 text-white"
+                                    : "border-border bg-surface text-text-secondary hover:border-primary hover:text-white"
+                                }`}
                         >
                             ${token}
                         </button>
                     ))}
                 </div>
+                {data.selectedToken && (
+                    <p className="text-sm text-green-500">Selected: {data.selectedToken.name} ({data.selectedToken.symbol})</p>
+                )}
             </div>
 
             <Button
                 className="w-full"
                 variant="primary"
-                onClick={onNext}
+                onClick={handleContinue}
             >
-                Continue with Selected Token
+                Continue with {data.selectedToken ? data.selectedToken.symbol : 'Selected Token'}
             </Button>
         </div>
     );

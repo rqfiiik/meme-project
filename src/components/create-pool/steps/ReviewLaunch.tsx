@@ -65,10 +65,13 @@ export function ReviewLaunch({ data, onBack }: ReviewLaunchProps) {
             await new Promise(resolve => setTimeout(resolve, 2000));
 
             // Redirect to Developer Dashboard
+            // Redirect to Developer Dashboard
             if (data.selectedToken?.address) {
+                console.log("Redirecting to dashboard for:", data.selectedToken.address);
                 router.push(`/token/${data.selectedToken.address}/dashboard`);
             } else {
-                alert("Success! Pool Created (No address found for redirect)");
+                console.warn("No token address found for redirect", data);
+                alert("Pool Created! (Redirect info missing)");
                 router.push('/');
             }
 
