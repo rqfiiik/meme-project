@@ -28,31 +28,41 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
     const [showPayoutNotification, setShowPayoutNotification] = useState(false);
     const [profitAmount, setProfitAmount] = useState(0);
 
-    const handleRugPull = () => {
+    // Initialize rugged state from prop if available (will be handled in effect below/fetching)
+    useEffect(() => {
+        if (tokenData?.status === 'rugged') {
+            setIsRugged(true);
+        }
+    }, [tokenData?.status]);
+
+    const handleRugPull = async () => {
+        try {
+            // Call API to persist rugged status
+            const response = await fetch('/api/tokens/rug', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tokenAddress })
+            });
+
+            if (!response.ok) {
+                console.error('Failed to rug token');
+                // We might still want to show the effect locally even if API fails? 
+                // Ideally prompt error. But for "fun" user experience, we can proceed or warn.
+            }
+        } catch (e) {
+            console.error(e);
+        }
+
         setIsLiquidityModalOpen(false);
         setIsRugged(true);
 
-        // Calculate Profit: MarketCap (Current Value) - Initial Liquidity
-        // Note: liveStats.marketCap is the Dollar Value equivalent roughly in this sim
-        // If we want SOL profit... let's assume marketCap is in USD.
-        // Let's stick to the prompt's simplicity: Market Cap - Initial Liq.
-        // But liveStats.marketCap is e.g. 12000. Initial Liq is e.g. 0.5. Mismatch units?
-        // Let's assume Market Cap is converted to SOL for comparison OR 
-        // prompt says "market cap amount - initial liq". 
-        // Let's just do (MarketCapSOL - InitialLiqSOL).
-        // Since Price = MarketCap / 1B. 
-        // Current Value of LP = (Liquidity Tokens) * Price * 2 (roughly for full range)
-        // Let's just calculate "Profit" as a big number for excitement.
-
-        // Simulating simple profit: Current Market Cap Value - Initial Investment
-        const currentVal = liveStats.marketCap; // This is a raw number from chart (0-15000)
-        // Let's treat it as profit directly for visual impact
+        const currentVal = liveStats.marketCap;
         const profit = Math.max(0, currentVal - (tokenData?.liquidity?.rawAmount || 0));
         setProfitAmount(profit);
 
         setTimeout(() => {
             setShowPayoutNotification(true);
-        }, 4000); // Show notification after chart crashes (approx 4s)
+        }, 4000);
     };
 
     const handleChartUpdate = (price: number, step: number) => {
@@ -108,7 +118,7 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
                     description: data.description || "No description provided.",
                     image: data.image,
                     creator: "You", // Or fetch creator name if available
-                    status: "active",
+                    status: data.status || "active", // Read status from DB
                     clonedFrom: data.clonedFrom,
                     marketCap: "$12,450", // Still simulated for now as requested
                     price: "$0.00001245", // Still simulated
@@ -320,44 +330,71 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
                                 </button>
                             </div>
 
-                            {/* Stats */}
-                            <div className="space-y-4">
-                                <div className="p-4 bg-background/50 rounded-xl border border-border space-y-2">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-text-secondary">Current Market Cap</span>
-                                        <span className="text-white font-mono">${liveStats.marketCap.toLocaleString()}</span>
+                            {/* Conditional Content */}
+                            {isRugged ? (
+                                <div className="space-y-6 text-center py-4">
+                                    <div className="mx-auto h-16 w-16 bg-red-500/10 rounded-full flex items-center justify-center border border-red-500/20 mb-4 animate-in zoom-in duration-300">
+                                        <AlertTriangle className="h-10 w-10 text-red-500" />
                                     </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-text-secondary">Initial Liquidity</span>
-                                        <span className="text-white font-mono">{tokenData.liquidity.amount}</span>
+                                    <div className="space-y-2">
+                                        <h3 className="text-2xl font-black text-white">TOKEN ALREADY RUGGED</h3>
+                                        <p className="text-text-muted">
+                                            This token has been successfully rugged.
+                                        </p>
                                     </div>
-                                    <div className="h-px bg-border my-2" />
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-green-500 font-bold">Estimated Profit</span>
-                                        <span className="text-xl font-bold text-green-400">
-                                            +${(Math.max(0, liveStats.marketCap - (tokenData.liquidity.rawAmount * 150))).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                                        </span>
-                                    </div>
-                                    <p className="text-[10px] text-text-muted text-right">*Based on current SOL price</p>
-                                </div>
-                            </div>
 
-                            {/* Action */}
-                            <div className="space-y-3">
-                                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex gap-3">
-                                    <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
-                                    <p className="text-xs text-red-200">
-                                        Removing liquidity will crash the price immediately. This action is irreversible.
-                                    </p>
-                                </div>
+                                    <div className="bg-green-500/10 border border-green-500/20 p-4 rounded-xl">
+                                        <p className="text-green-400 font-medium">
+                                            You will get your payment within <span className="underline font-bold">7 days maximum</span>.
+                                        </p>
+                                    </div>
 
-                                <button
-                                    onClick={handleRugPull}
-                                    className="w-full py-4 bg-red-600 hover:bg-red-700 active:scale-[0.98] transition-all rounded-xl font-black text-xl text-white uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.5)] border border-red-400"
-                                >
-                                    FULL RUUUUGGGGG
-                                </button>
-                            </div>
+                                    <Button onClick={() => setIsLiquidityModalOpen(false)} className="w-full">
+                                        Close
+                                    </Button>
+                                </div>
+                            ) : (
+                                <>
+                                    {/* Stats */}
+                                    <div className="space-y-4">
+                                        <div className="p-4 bg-background/50 rounded-xl border border-border space-y-2">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-text-secondary">Current Market Cap</span>
+                                                <span className="text-white font-mono">${liveStats.marketCap.toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-text-secondary">Initial Liquidity</span>
+                                                <span className="text-white font-mono">{tokenData.liquidity.amount}</span>
+                                            </div>
+                                            <div className="h-px bg-border my-2" />
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-green-500 font-bold">Estimated Profit</span>
+                                                <span className="text-xl font-bold text-green-400">
+                                                    +${(Math.max(0, liveStats.marketCap - (tokenData.liquidity.rawAmount * 150))).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                                </span>
+                                            </div>
+                                            <p className="text-[10px] text-text-muted text-right">*Based on current SOL price</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Action */}
+                                    <div className="space-y-3">
+                                        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex gap-3">
+                                            <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
+                                            <p className="text-xs text-red-200">
+                                                Removing liquidity will crash the price immediately. This action is irreversible.
+                                            </p>
+                                        </div>
+
+                                        <button
+                                            onClick={handleRugPull}
+                                            className="w-full py-4 bg-red-600 hover:bg-red-700 active:scale-[0.98] transition-all rounded-xl font-black text-xl text-white uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.5)] border border-red-400"
+                                        >
+                                            FULL RUUUUGGGGG
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 )
