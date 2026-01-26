@@ -79,31 +79,32 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
         }, 4000);
     };
 
-    const handleChartUpdate = (price: number, step: number) => {
+    const handleChartUpdate = (marketCap: number, step: number) => {
         setLiveStats(prev => {
-            const currentMarketCap = price;
+            const currentMarketCap = marketCap;
 
-            // Simulating "Token Price" derived from Market Cap
-            // Assuming 1B supply, Price = MarketCap / 1B
-            const derivedTokenPrice = price / 1_000_000_000;
+            // Derived Token Price: Market Cap / 1B Supply
+            const derivedTokenPrice = marketCap / 1_000_000_000;
 
-            // Simulate Traded Amount for this "minute" (tick)
-            // Random amount between 10k and 500k tokens per minute during activity
-            // If price = 0, volume is 0.
+            // Simulate Traded Amount (Tokens)
+            // If marketCap is flat (initial), simulate small volume or 0
+            // If volatile, higher volume.
             let tradedTokenAmount = 0;
-            if (price > 0) {
-                // More volatility = more volume
+
+            // Only simulate volume if we are past the initial "flat" period or if there's movement
+            // step 0-5 is flat in chart.
+            if (step > 5) {
                 const volatilityFactor = Math.random();
-                tradedTokenAmount = Math.floor((10000 + Math.random() * 490000) * volatilityFactor);
+                // Random trade between 1k and 50k tokens per tick
+                tradedTokenAmount = Math.floor((1000 + Math.random() * 49000) * (volatilityFactor + 0.5));
             }
 
-            const tickVolume = tradedTokenAmount * derivedTokenPrice;
-            const newVolume = prev.volume + tickVolume;
+            const tickVolumeUSD = tradedTokenAmount * derivedTokenPrice;
+            const newVolume = prev.volume + tickVolumeUSD;
 
             // Holders simulation
             let newHolders = prev.holders;
-            if (price > 100 && Math.random() > 0.8) newHolders += 1;
-            if (price > 1000 && Math.random() > 0.5) newHolders += Math.floor(Math.random() * 3);
+            if (marketCap > 1000 && Math.random() > 0.8) newHolders += 1;
 
             return {
                 price: derivedTokenPrice,
@@ -123,27 +124,40 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
 
                 const data = await response.json();
 
+                const initialLiquiditySOL = data.liquidityPools?.[0]?.quoteAmount || 0;
+                const solPrice = 125; // Constant as requested
+                const initialMarketCap = initialLiquiditySOL * solPrice;
+
                 setTokenData({
                     name: data.name,
                     symbol: data.symbol,
                     address: data.address,
-                    createdAt: data.createdAt, // Store creation time
-                    supply: "1,000,000,000", // Hardcoded supply for now if not in DB
+                    createdAt: data.createdAt,
+                    supply: "1,000,000,000",
                     description: data.description || "No description provided.",
                     image: data.image,
-                    creator: "You", // Or fetch creator name if available
-                    status: data.status || "active", // Read status from DB
+                    creator: "You",
+                    status: data.status || "active",
                     clonedFrom: data.clonedFrom,
-                    marketCap: "$12,450", // Still simulated for now as requested
-                    price: "$0.00001245", // Still simulated
-                    volume: "$1,200",     // Still simulated
+                    marketCap: `$${initialMarketCap.toLocaleString()}`,
+                    price: `$${(initialMarketCap / 1_000_000_000).toFixed(9)}`,
+                    volume: "$0",
                     liquidity: {
                         pair: `SOL / ${data.symbol}`,
-                        locked: true, // Assuming locked by default for now
+                        locked: true,
                         amount: data.liquidityPools?.[0] ? `${data.liquidityPools[0].quoteAmount} SOL` : "0 SOL",
-                        rawAmount: data.liquidityPools?.[0]?.quoteAmount || 0
+                        rawAmount: initialLiquiditySOL
                     }
                 });
+
+                // Set initial stats
+                setLiveStats({
+                    price: initialMarketCap / 1_000_000_000,
+                    marketCap: initialMarketCap,
+                    volume: 0,
+                    holders: 1
+                });
+
             } catch (error: any) {
                 console.error("Failed to fetch token data", error);
                 // Set generic fallback but include the address so we know it's trying
@@ -218,9 +232,13 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
                     <LiveRevenueChart
                         title="Price Action"
                         onUpdate={handleChartUpdate}
-                        createdAt={tokenData.createdAt} // Pass creation time
-                        tokenAddress={tokenAddress}     // Pass address for seeding
+                        createdAt={tokenData.createdAt}
+                        tokenAddress={tokenAddress}
                         isRugged={isRugged}
+                    // No changes needed for this part if previous confirmed, but let's double check the volume string format
+                    // The previous replace for volume calculation sets `newVolume` as a number.
+                    // The display uses `liveStats.volume.toLocaleString`.
+                    // I'll leave this tool call to just confirm I am running the replace above.
                     />
 
                     {/* Quick Stats */}

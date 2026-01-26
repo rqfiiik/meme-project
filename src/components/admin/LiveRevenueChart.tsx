@@ -10,6 +10,7 @@ interface LiveRevenueChartProps {
     createdAt?: string | Date;
     tokenAddress?: string;
     isRugged?: boolean;
+    initialValue?: number; // New prop
 }
 
 // Simple seeded random function (Linear Congruential Generator)
@@ -37,7 +38,7 @@ function stringToSeed(str: string): number {
     return Math.abs(hash);
 }
 
-export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, tokenAddress, isRugged = false }: LiveRevenueChartProps) {
+export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, tokenAddress, isRugged = false, initialValue = 0 }: LiveRevenueChartProps) {
     const [visibleCount, setVisibleCount] = useState(0);
 
     // Generate accurate volatile data DETERMINISTICALLY
@@ -46,24 +47,24 @@ export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, 
         const random = createSeededRandom(seedValue);
 
         const points = [];
-        const target = 15000;
+        const target = 15000 + initialValue; // Target grows from initial
         const steps = 100; // 100 minutes
-        let currentValue = 0;
+        let currentValue = initialValue;
 
         for (let i = 0; i <= steps; i++) {
             if (i < 5) {
-                // First 5 minutes: Dead flat 0 
-                points.push({ min: i, val: 0 });
-                currentValue = 0;
+                // First 5 minutes: Flat at initial value
+                points.push({ min: i, val: initialValue });
+                currentValue = initialValue;
             } else if (i <= 15) {
-                // 5-15 mins: Waking up
-                const wakeUp = random() * 10 * (i - 5);
+                // 5-15 mins: Waking up from initial
+                const wakeUp = initialValue + (random() * 10 * (i - 5));
                 points.push({ min: i, val: wakeUp });
                 currentValue = wakeUp;
             } else {
                 // 15+ mins: Volatile growth
                 const progress = (i - 15) / (steps - 15);
-                const base = progress * target;
+                const base = initialValue + (progress * (target - initialValue));
 
                 // HIGH Volatility
                 const randomSwing = (random() - 0.5) * 2;
@@ -80,7 +81,7 @@ export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, 
             }
         }
         return points;
-    }, [tokenAddress]);
+    }, [tokenAddress, initialValue]);
 
     // Initial Time Sync
     useEffect(() => {
