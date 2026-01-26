@@ -57,6 +57,7 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
                     name: data.name,
                     symbol: data.symbol,
                     address: data.address,
+                    createdAt: data.createdAt, // Store creation time
                     supply: "1,000,000,000", // Hardcoded supply for now if not in DB
                     description: data.description || "No description provided.",
                     image: data.image,
@@ -142,7 +143,12 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
                 {/* Main Chart Area (Left - 2cols) */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Live Chart */}
-                    <LiveRevenueChart title="Price Action" onUpdate={handleChartUpdate} />
+                    <LiveRevenueChart
+                        title="Price Action"
+                        onUpdate={handleChartUpdate}
+                        createdAt={tokenData.createdAt} // Pass creation time
+                        tokenAddress={tokenAddress}     // Pass address for seeding
+                    />
 
                     {/* Quick Stats */}
                     <div className="grid grid-cols-3 gap-4">

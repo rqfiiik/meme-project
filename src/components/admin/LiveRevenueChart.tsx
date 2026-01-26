@@ -1,78 +1,139 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, TrendingUp } from 'lucide-react';
 
 interface LiveRevenueChartProps {
     title?: string;
+    onUpdate?: (price: number, step: number) => void;
+    createdAt?: string | Date;
+    tokenAddress?: string;
 }
 
-export function LiveRevenueChart({ title = "Price Action" }: LiveRevenueChartProps) {
+// Simple seeded random function (Linear Congruential Generator)
+function createSeededRandom(seed: number) {
+    let m = 0x80000000;
+    let a = 1103515245;
+    let c = 12345;
+    let state = seed ? seed : Math.random() * m;
+
+    return () => {
+        state = (a * state + c) % m;
+        return state / (m - 1);
+    };
+}
+
+// Convert address to numeric seed
+function stringToSeed(str: string): number {
+    let hash = 0;
+    if (!str) return 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash);
+}
+
+export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, tokenAddress }: LiveRevenueChartProps) {
     const [visibleCount, setVisibleCount] = useState(0);
 
-    // Generate static fake data once
+    // Generate accurate volatile data DETERMINISTICALLY
     const data = useMemo(() => {
+        const seedValue = tokenAddress ? stringToSeed(tokenAddress) : 12345;
+        const random = createSeededRandom(seedValue);
+
         const points = [];
-        let currentValue = 0;
-        const target = 15000; // Final target around 15,000
+        const target = 15000;
         const steps = 100; // 100 minutes
+        let currentValue = 0;
 
         for (let i = 0; i <= steps; i++) {
-            if (i === 0) {
-                points.push({ min: 0, val: 0 });
+            if (i < 5) {
+                // First 5 minutes: Dead flat 0 
+                points.push({ min: i, val: 0 });
                 currentValue = 0;
-            } else if (i <= 10) {
-                // First 10 minutes: keep low between 0 and 50
-                // Random walk within 0-50 range
-                const delta = (Math.random() - 0.5) * 10;
-                let nextVal = currentValue + delta;
-                if (nextVal < 0) nextVal = 0;
-                if (nextVal > 50) nextVal = 50;
-                points.push({ min: i, val: nextVal });
-                currentValue = nextVal;
+            } else if (i <= 15) {
+                // 5-15 mins: Waking up
+                const wakeUp = random() * 10 * (i - 5);
+                points.push({ min: i, val: wakeUp });
+                currentValue = wakeUp;
             } else {
-                // After 10 mins: Grow towards 15000 with volatility
-                const percentComplete = (i - 10) / (steps - 10);
+                // 15+ mins: Volatile growth
+                const progress = (i - 15) / (steps - 15);
+                const base = progress * target;
 
-                // Base growth curve (exponential-ish for excitement)
-                const baseGrowth = currentValue + ((target - currentValue) / (steps - i)) * 1.5;
+                // HIGH Volatility
+                const randomSwing = (random() - 0.5) * 2;
+                const volatilityMagnitude = base * 0.3;
 
-                // Add significant volatility (ups and downs)
-                // Random factor between -10% and +15% of current value for "ups and downs"
-                const volatility = (Math.random() * 0.25 - 0.10) * currentValue;
+                let val = base + (randomSwing * volatilityMagnitude);
 
-                let stepValue = baseGrowth + volatility;
+                if (random() > 0.9) val *= 1.5; // Pump
+                if (random() < 0.1) val *= 0.7; // Dump
 
-                // Ensure we don't drop below 0
-                if (stepValue < 0) stepValue = 0;
-
-                // Cap at reasonably above target if random spike
-                if (stepValue > target * 1.2) stepValue = target * 1.2;
-
-                // Force convergence near the end
-                if (i > 95) {
-                    stepValue = currentValue + (target - currentValue) * 0.5;
-                }
-
-                points.push({ min: i, val: stepValue });
-                currentValue = stepValue;
+                if (val < 0) val = 0;
+                points.push({ min: i, val });
+                currentValue = val;
             }
         }
         return points;
-    }, []);
+    }, [tokenAddress]);
 
-    // Animation Tick
+    // Initial Time Sync
+    useEffect(() => {
+        if (!createdAt) return;
+
+        const start = new Date(createdAt).getTime();
+        const now = Date.now();
+        const diffMs = now - start;
+        const diffMinutes = Math.floor(diffMs / 60000); // 1 Real Minute = 1 Chart Step
+
+        // If newly created, might be < 0 or 0
+        let initialStep = Math.max(0, diffMinutes);
+
+        // Cap at max steps
+        if (initialStep > 100) initialStep = 100;
+
+        setVisibleCount(initialStep);
+
+        // Trigger immediate update for stats
+        if (data[initialStep] && onUpdate) {
+            onUpdate(data[initialStep].val, data[initialStep].min);
+        }
+
+    }, [createdAt, onUpdate, data]);
+
+    // Animation Tick - Real-time (approximate)
     useEffect(() => {
         const interval = setInterval(() => {
             setVisibleCount(prev => {
-                if (prev < data.length) return prev + 1;
-                return prev;
+                if (!createdAt) return prev + 1; // Fallback to auto-play if no createdAt
+
+                // Recalculate based on wall clock to stay in sync even if tab sleeps
+                const start = new Date(createdAt).getTime();
+                const now = Date.now();
+                const diffMs = now - start;
+                const targetStep = Math.floor(diffMs / 60000);
+
+                const next = Math.min(targetStep, 100);
+
+                if (next < prev) return prev; // Don't go back
+
+                if (next > prev || next === prev) {
+                    // Check if valid index
+                    const point = data[next];
+                    if (point && onUpdate) {
+                        onUpdate(point.val, point.min);
+                    }
+                }
+                return next;
             });
-        }, 500); // Faster animation (0.5s per "minute" point)
+        }, 5000); // Check every 5 seconds to sync time
 
         return () => clearInterval(interval);
-    }, [data.length]);
+    }, [data, onUpdate, createdAt]);
 
     // Dimensions
     const width = 600;
@@ -80,12 +141,16 @@ export function LiveRevenueChart({ title = "Price Action" }: LiveRevenueChartPro
     const padding = 20;
 
     // Helper to map data to SVG coordinates
-    const maxVal = Math.max(...data.map(d => d.val), 15000) * 1.1; // Dynamic max based on data peak or 15k
+    const currentMax = useMemo(() => {
+        const sliced = data.slice(0, Math.max(visibleCount, 10));
+        const maxInView = Math.max(...sliced.map(d => d.val));
+        return Math.max(maxInView * 1.2, 100);
+    }, [visibleCount, data]);
 
     const getX = (min: number) => (min / 100) * (width - padding * 2) + padding;
-    const getY = (val: number) => height - padding - (val / maxVal) * (height - padding * 2);
+    const getY = (val: number) => height - padding - (val / currentMax) * (height - padding * 2);
 
-    const visibleData = data.slice(0, visibleCount);
+    const visibleData = data.slice(0, visibleCount + 1); // +1 to include current
 
     // Create Path 'd' attribute
     const pathD = visibleData.length > 0
@@ -99,6 +164,12 @@ export function LiveRevenueChart({ title = "Price Action" }: LiveRevenueChartPro
         : '';
 
     const currentVal = visibleData.length > 0 ? visibleData[visibleData.length - 1].val : 0;
+
+    // Calculate simulated 30m change
+    const start30mIndex = Math.max(0, visibleCount - 30);
+    const val30mAgo = data[start30mIndex]?.val || 0;
+    const change = currentVal - val30mAgo;
+    const isPositive = change >= 0;
 
     return (
         <div className="w-full rounded-xl border border-border bg-black/40 p-6 shadow-xl backdrop-blur-md relative overflow-hidden group">
@@ -115,9 +186,9 @@ export function LiveRevenueChart({ title = "Price Action" }: LiveRevenueChartPro
                     <div className="text-3xl font-bold font-mono text-white tracking-tight">
                         ${currentVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
-                    <div className="text-sm text-green-400 font-medium flex items-center justify-end gap-1">
-                        <TrendingUp className="h-3 w-3" />
-                        +${currentVal.toFixed(2)} (Last 100m)
+                    <div className={`text-sm font-medium flex items-center justify-end gap-1 ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+                        <TrendingUp className={`h-3 w-3 ${!isPositive && 'rotate-180'}`} />
+                        {isPositive ? '+' : ''}${Math.abs(change).toFixed(2)} (Last 30m)
                     </div>
                 </div>
             </div>
@@ -140,21 +211,20 @@ export function LiveRevenueChart({ title = "Price Action" }: LiveRevenueChartPro
                     <motion.path
                         d={areaD}
                         fill="url(#gradientFill)"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
+                        animate={{ d: areaD }}
+                        transition={{ type: "tween", ease: "linear", duration: 0.5 }}
                     />
 
                     {/* Line Stroke */}
                     <motion.path
                         d={pathD}
                         fill="none"
-                        stroke="#8b5cf6"
+                        stroke={isPositive ? "#4ade80" : "#f87171"} // Green/Red based on trend
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{ duration: 0.1, ease: "linear" }}
+                        animate={{ d: pathD }}
+                        transition={{ type: "tween", ease: "linear", duration: 0.5 }}
                     />
 
                     {/* Live Dot at tip */}
@@ -164,7 +234,7 @@ export function LiveRevenueChart({ title = "Price Action" }: LiveRevenueChartPro
                             cy={getY(visibleData[visibleData.length - 1].val)}
                             r="4"
                             fill="white"
-                            className="drop-shadow-[0_0_8px_rgba(139,92,246,1)]"
+                            className="drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
                         />
                     )}
                 </svg>
@@ -175,6 +245,10 @@ export function LiveRevenueChart({ title = "Price Action" }: LiveRevenueChartPro
                 <span>0m</span>
                 <span>50m</span>
                 <span>100m</span>
+            </div>
+
+            <div className="absolute bottom-4 right-4 text-[10px] text-white/10 pointer-events-none uppercase tracking-[0.2em] font-bold">
+                {visibleCount < 5 ? 'Waiting for Volume' : 'Live Trading'}
             </div>
 
         </div>
