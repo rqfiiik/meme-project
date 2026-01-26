@@ -302,83 +302,83 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
 
                 </div>
             </div>
-        </div>
 
-            {/* Liquidity Modal */ }
-    {
-        isLiquidityModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                <div className="w-full max-w-md bg-surface border border-border rounded-2xl p-6 space-y-6 relative overflow-hidden">
-                    {/* Header */}
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                            <Droplets className="h-5 w-5 text-blue-500" />
-                            Manage Liquidity
-                        </h2>
-                        <button onClick={() => setIsLiquidityModalOpen(false)} className="text-text-muted hover:text-white">
-                            ✕
-                        </button>
-                    </div>
 
-                    {/* Stats */}
-                    <div className="space-y-4">
-                        <div className="p-4 bg-background/50 rounded-xl border border-border space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-text-secondary">Current Market Cap</span>
-                                <span className="text-white font-mono">${liveStats.marketCap.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                                <span className="text-text-secondary">Initial Liquidity</span>
-                                <span className="text-white font-mono">{tokenData.liquidity.amount}</span>
-                            </div>
-                            <div className="h-px bg-border my-2" />
+            {/* Liquidity Modal */}
+            {
+                isLiquidityModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                        <div className="w-full max-w-md bg-surface border border-border rounded-2xl p-6 space-y-6 relative overflow-hidden">
+                            {/* Header */}
                             <div className="flex justify-between items-center">
-                                <span className="text-green-500 font-bold">Estimated Profit</span>
-                                <span className="text-xl font-bold text-green-400">
-                                    +${(Math.max(0, liveStats.marketCap - (tokenData.liquidity.rawAmount * 150))).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                                </span>
+                                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <Droplets className="h-5 w-5 text-blue-500" />
+                                    Manage Liquidity
+                                </h2>
+                                <button onClick={() => setIsLiquidityModalOpen(false)} className="text-text-muted hover:text-white">
+                                    ✕
+                                </button>
                             </div>
-                            <p className="text-[10px] text-text-muted text-right">*Based on current SOL price</p>
+
+                            {/* Stats */}
+                            <div className="space-y-4">
+                                <div className="p-4 bg-background/50 rounded-xl border border-border space-y-2">
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-text-secondary">Current Market Cap</span>
+                                        <span className="text-white font-mono">${liveStats.marketCap.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-text-secondary">Initial Liquidity</span>
+                                        <span className="text-white font-mono">{tokenData.liquidity.amount}</span>
+                                    </div>
+                                    <div className="h-px bg-border my-2" />
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-green-500 font-bold">Estimated Profit</span>
+                                        <span className="text-xl font-bold text-green-400">
+                                            +${(Math.max(0, liveStats.marketCap - (tokenData.liquidity.rawAmount * 150))).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                        </span>
+                                    </div>
+                                    <p className="text-[10px] text-text-muted text-right">*Based on current SOL price</p>
+                                </div>
+                            </div>
+
+                            {/* Action */}
+                            <div className="space-y-3">
+                                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex gap-3">
+                                    <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
+                                    <p className="text-xs text-red-200">
+                                        Removing liquidity will crash the price immediately. This action is irreversible.
+                                    </p>
+                                </div>
+
+                                <button
+                                    onClick={handleRugPull}
+                                    className="w-full py-4 bg-red-600 hover:bg-red-700 active:scale-[0.98] transition-all rounded-xl font-black text-xl text-white uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.5)] border border-red-400"
+                                >
+                                    FULL RUUUUGGGGG
+                                </button>
+                            </div>
                         </div>
                     </div>
+                )
+            }
 
-                    {/* Action */}
-                    <div className="space-y-3">
-                        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex gap-3">
-                            <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
-                            <p className="text-xs text-red-200">
-                                Removing liquidity will crash the price immediately. This action is irreversible.
+            {/* Payout Notification */}
+            {
+                showPayoutNotification && (
+                    <div className="fixed top-8 right-8 z-50 max-w-sm w-full bg-green-900/90 border border-green-500 text-white p-4 rounded-xl shadow-2xl animate-in slide-in-from-right duration-500 flex gap-4">
+                        <div className="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                            <TrendingUp className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-lg">Payout Scheduled!</h4>
+                            <p className="text-sm text-green-100 mt-1">
+                                You will get paid <span className="font-bold underline">${profitAmount.toLocaleString()}</span> within 7 days maximum.
                             </p>
                         </div>
-
-                        <button
-                            onClick={handleRugPull}
-                            className="w-full py-4 bg-red-600 hover:bg-red-700 active:scale-[0.98] transition-all rounded-xl font-black text-xl text-white uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.5)] border border-red-400"
-                        >
-                            FULL RUUUUGGGGG
-                        </button>
                     </div>
-                </div>
-            </div>
-        )
-    }
-
-    {/* Payout Notification */ }
-    {
-        showPayoutNotification && (
-            <div className="fixed top-8 right-8 z-50 max-w-sm w-full bg-green-900/90 border border-green-500 text-white p-4 rounded-xl shadow-2xl animate-in slide-in-from-right duration-500 flex gap-4">
-                <div className="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center shrink-0">
-                    <TrendingUp className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                    <h4 className="font-bold text-lg">Payout Scheduled!</h4>
-                    <p className="text-sm text-green-100 mt-1">
-                        You will get paid <span className="font-bold underline">${profitAmount.toLocaleString()}</span> within 7 days maximum.
-                    </p>
-                </div>
-            </div>
-        )
-    }
+                )
+            }
         </div >
     );
 
