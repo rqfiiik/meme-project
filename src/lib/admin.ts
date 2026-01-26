@@ -1,3 +1,5 @@
+import { User } from "@prisma/client";
+
 export function isUserAdmin(user: Partial<User> | null, walletAddress?: string): boolean {
     const HARDCODED_ADMIN = "rqfik.lakehal@gmail.com";
 
