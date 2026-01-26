@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Rocket, Droplets, ExternalLink, Copy, Activity, TrendingUp, AlertTriangle, GitFork } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
+import { LiveRevenueChart } from '@/components/admin/LiveRevenueChart';
 
 interface DashboardClientProps {
     tokenAddress: string;
@@ -86,34 +87,8 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
 
                 {/* Main Chart Area (Left - 2cols) */}
                 <div className="lg:col-span-2 space-y-6">
-                    {/* Simulated Chart */}
-                    <div className="rounded-xl border border-border bg-surface/50 p-6 h-[400px] flex flex-col relative overflow-hidden group">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-bold text-white flex items-center gap-2">
-                                <Activity className="h-5 w-5 text-primary" /> Price Action
-                            </h3>
-                            <div className="text-right">
-                                <div className="text-2xl font-mono text-white font-bold">{tokenData.price}</div>
-                                <div className="text-xs text-green-500 flex items-center justify-end gap-1">
-                                    <TrendingUp className="h-3 w-3" /> +12.5%
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Fake Chart Visualization */}
-                        <div className="flex-1 w-full bg-black/20 rounded-lg relative flex items-end px-4 pb-4 gap-2">
-                            {[...Array(20)].map((_, i) => (
-                                <div
-                                    key={i}
-                                    className="flex-1 bg-primary/20 hover:bg-primary transition-all duration-300 rounded-t-sm"
-                                    style={{ height: `${20 + Math.random() * 60}%` }}
-                                />
-                            ))}
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <span className="px-3 py-1 bg-black/50 backdrop-blur rounded-full text-xs text-text-muted">Simulated Live Data</span>
-                            </div>
-                        </div>
-                    </div>
+                    {/* Live Chart */}
+                    <LiveRevenueChart title="Price Action (Simulation)" />
 
                     {/* Quick Stats */}
                     <div className="grid grid-cols-3 gap-4">
