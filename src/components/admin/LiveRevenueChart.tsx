@@ -38,6 +38,31 @@ function stringToSeed(str: string): number {
     return Math.abs(hash);
 }
 
+// Simple seeded random function (Linear Congruential Generator)
+function createSeededRandom(seed: number) {
+    let m = 0x80000000;
+    let a = 1103515245;
+    let c = 12345;
+    let state = seed ? seed : Math.random() * m;
+
+    return () => {
+        state = (a * state + c) % m;
+        return state / (m - 1);
+    };
+}
+
+// Convert address to numeric seed
+function stringToSeed(str: string): number {
+    let hash = 0;
+    if (!str) return 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash);
+}
+
 export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, tokenAddress, isRugged = false, initialValue = 0 }: LiveRevenueChartProps) {
     const [visibleCount, setVisibleCount] = useState(0);
 

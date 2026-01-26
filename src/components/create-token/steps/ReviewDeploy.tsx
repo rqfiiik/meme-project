@@ -61,29 +61,28 @@ export function ReviewDeploy({ data, updateData, onBack }: ReviewDeployProps) {
             const signature = paymentResult.signature;
 
             // 2. Save Token to Database
-            try {
-                const response = await fetch('/api/tokens', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: data.name,
-                        symbol: data.symbol,
-                        description: data.description,
-                        image: data.imagePreview, // Sending the base64/url preview for now
-                        website: data.website,
-                        twitter: data.twitter,
-                        telegram: data.telegram,
-                        userAddress: publicKey.toString(),
-                        address: mintKeypair.publicKey.toString(), // The Mint Address
-                        signature: signature,
-                        clonedFrom: data.clonedFrom // Pass clonedFrom if available
-                    })
-                });
+            // 2. Save Token to Database
+            const response = await fetch('/api/tokens', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: data.name,
+                    symbol: data.symbol,
+                    description: data.description,
+                    image: data.imagePreview,
+                    website: data.website,
+                    twitter: data.twitter,
+                    telegram: data.telegram,
+                    userAddress: publicKey.toString(),
+                    address: mintKeypair.publicKey.toString(), // The Mint Address
+                    signature: signature,
+                    clonedFrom: data.clonedFrom
+                })
+            });
 
-                if (!response.ok) throw new Error('Failed to save token');
-
-            } catch (tokenError) {
-                console.error("Failed to save token:", tokenError);
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || 'Failed to save token to database');
             }
 
             // Mock delay for minting simulation
