@@ -17,8 +17,12 @@ export async function GET() {
         // If we wanted to check connected wallet address from session, we'd need it there.
         // Assuming session.user has relevant info or we just check email/role.
         console.log("[API AdminStatus] Session User:", session.user);
+
+        // isUserAdmin now handles the bypass check internally (returns false if bypass invalid)
         const isAdmin = isUserAdmin(session.user);
-        const bypass = process.env.ADMIN_BYPASS === 'true' && isAdmin;
+
+        // So if isAdmin is true, bypass is allowed
+        const bypass = isAdmin;
 
         console.log("[API AdminStatus] Result:", { isAdmin, bypass });
 

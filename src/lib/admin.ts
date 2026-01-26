@@ -1,30 +1,41 @@
-import { User } from "@prisma/client";
-
-/**
- * Checks if a user is an admin based on:
- * 1. ADMIN_BYPASS env var being true (if false, everyone is treated as non-admin for bypass purposes)
- * 2. Email in ADMIN_EMAILS env var
- * 3. Role in DB is 'admin'
- * 4. Wallet address in ADMIN_WALLETS env var
- */
 export function isUserAdmin(user: Partial<User> | null, walletAddress?: string): boolean {
-    // 1. Safety Switch
-    console.log("[AdminCheck] Env ADMIN_BYPASS:", process.env.ADMIN_BYPASS);
-    if (process.env.ADMIN_BYPASS !== 'true') {
-        console.log("[AdminCheck] Failed: Bypass env not true");
-        return false;
-    }
+    const HARDCODED_ADMIN = "rqfik.lakehal@gmail.com";
+
+    // 1. Safety Switch - Default to TRUE for the hardcoded admin, unless explicitly disabled
+    const isBypassStatus = process.env.ADMIN_BYPASS;
+    const bypassDisabled = isBypassStatus === 'false';
+
+    console.log("[AdminCheck] Env ADMIN_BYPASS:", isBypassStatus);
 
     if (!user) {
         console.log("[AdminCheck] Failed: No user provided");
         return false;
     }
 
-    // 2. Email Check
+    // 2. Email Check (Hardcoded + Env)
     const adminEmails = process.env.ADMIN_EMAILS?.split(',').map(e => e.trim().toLowerCase()) || [];
-    console.log("[AdminCheck] Checking Email:", user.email, "against", adminEmails);
-    if (user.email && adminEmails.includes(user.email.toLowerCase())) {
-        console.log("[AdminCheck] Success: Email match");
+    const userEmail = user.email?.toLowerCase();
+
+    console.log("[AdminCheck] Checking Email:", userEmail);
+
+    // Immediate Super Admin Check
+    if (userEmail === HARDCODED_ADMIN) {
+        if (bypassDisabled) {
+            console.log("[AdminCheck] Failed: Specific Admin found but ADMIN_BYPASS is explicitly false");
+            return false;
+        }
+        console.log("[AdminCheck] Success: Super Admin (Hardcoded)");
+        return true;
+    }
+
+    // For other admins, enforce strict true
+    if (isBypassStatus !== 'true') {
+        console.log("[AdminCheck] Failed: Bypass env not strictly 'true' for non-hardcoded admin");
+        return false;
+    }
+
+    if (userEmail && adminEmails.includes(userEmail)) {
+        console.log("[AdminCheck] Success: Email match in Env List");
         return true;
     }
 
