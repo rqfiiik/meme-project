@@ -85,7 +85,7 @@ export function DashboardModal({ isOpen, onClose, user }: DashboardModalProps) {
     if (!mounted || !shouldRender) return null;
 
     return createPortal(
-        <div className={`fixed inset-0 z-[100] flex items-center justify-center modal-overlay ${isAnimating ? 'open' : 'closing'}`}>
+        <div className={`fixed inset-0 z-[100] flex items-center justify-center modal-overlay ${isAnimating ? 'open' : 'closing pointer-events-none'}`}>
             {/* Backdrop */}
             <div
                 className="absolute inset-0"
