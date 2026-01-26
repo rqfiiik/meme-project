@@ -119,7 +119,7 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                const response = await fetch(`/api/tokens?address=${tokenAddress}`);
+                const response = await fetch(`/api/tokens?address=${tokenAddress}&t=${Date.now()}`, { cache: 'no-store' });
                 if (!response.ok) throw new Error('Failed to fetch token');
 
                 const data = await response.json();
