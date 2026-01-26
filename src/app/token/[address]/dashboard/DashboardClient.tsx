@@ -381,4 +381,5 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
             }
         </div >
     );
+}
 
