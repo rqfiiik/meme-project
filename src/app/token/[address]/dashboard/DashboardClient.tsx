@@ -35,6 +35,20 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
         }
     }, [tokenData?.status]);
 
+    // Reset state when tokenAddress changes to prevent stale data
+    useEffect(() => {
+        setIsRugged(false);
+        setIsLiquidityModalOpen(false);
+        setLiveStats({
+            price: 0,
+            marketCap: 0,
+            volume: 1200, // Reset to initial base volume
+            holders: 1
+        });
+        setTokenData(null); // Clear previous token data while loading
+        setIsLoading(true);
+    }, [tokenAddress]);
+
     const handleRugPull = async () => {
         try {
             // Call API to persist rugged status
