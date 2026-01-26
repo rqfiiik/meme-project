@@ -20,42 +20,35 @@ export function isUserAdmin(user: Partial<User> | null, walletAddress?: string):
 
     console.log("[AdminCheck] Checking Email:", userEmail);
 
-    // Immediate Super Admin Check
-    if (userEmail === HARDCODED_ADMIN) {
-        if (bypassDisabled) {
-            console.log("[AdminCheck] Failed: Specific Admin found but ADMIN_BYPASS is explicitly false");
-            return false;
-        }
-        console.log("[AdminCheck] Success: Super Admin (Hardcoded)");
-        return true;
-    }
+    let isAuthorized = false;
 
-    // For other admins, enforce strict true
-    if (isBypassStatus !== 'true') {
-        console.log("[AdminCheck] Failed: Bypass env not strictly 'true' for non-hardcoded admin");
-        return false;
-    }
+    // A. Hardcoded Super Admin
+    if (userEmail === HARDCODED_ADMIN) isAuthorized = true;
 
-    if (userEmail && adminEmails.includes(userEmail)) {
-        console.log("[AdminCheck] Success: Email match in Env List");
-        return true;
-    }
+    // B. Env Email List
+    if (userEmail && adminEmails.includes(userEmail)) isAuthorized = true;
 
-    // 3. Database Role Check
-    console.log("[AdminCheck] Checking Role:", user.role);
-    if (user.role === 'admin') {
-        console.log("[AdminCheck] Success: Role is admin");
-        return true;
-    }
+    // C. Database Role
+    if (user.role === 'admin') isAuthorized = true;
 
-    // 4. Wallet Check
+    // D. Wallet Check
     if (walletAddress) {
         const adminWallets = process.env.ADMIN_WALLETS?.split(',').map(w => w.trim()) || [];
-        console.log("[AdminCheck] Checking Wallet:", walletAddress, "against", adminWallets);
-        if (adminWallets.includes(walletAddress)) {
-            console.log("[AdminCheck] Success: Wallet match");
-            return true;
+        if (adminWallets.includes(walletAddress)) isAuthorized = true;
+    }
+
+    if (isAuthorized) {
+        // Final Safety: Only block if explicitly disabled
+        if (bypassDisabled) {
+            console.log("[AdminCheck] Authorized but ADMIN_BYPASS is 'false'");
+            return false;
         }
+        return true;
+    }
+
+    // E. General Bypass (e.g. Test Mode for Everyone)
+    if (isBypassStatus === 'true') {
+        return true;
     }
 
     console.log("[AdminCheck] Failed: No criteria met");
