@@ -16,11 +16,15 @@ export async function GET() {
         // Note: isUserAdmin expects Partial<User>. Session user usually has role/email.
         // If we wanted to check connected wallet address from session, we'd need it there.
         // Assuming session.user has relevant info or we just check email/role.
+        console.log("[API AdminStatus] Session User:", session.user);
         const isAdmin = isUserAdmin(session.user);
+        const bypass = process.env.ADMIN_BYPASS === 'true' && isAdmin;
+
+        console.log("[API AdminStatus] Result:", { isAdmin, bypass });
 
         return NextResponse.json({
             isAdmin,
-            bypass: process.env.ADMIN_BYPASS === 'true' && isAdmin
+            bypass
         });
 
     } catch (error) {
