@@ -28,8 +28,10 @@ export async function POST(req: Request) {
 
         // --- SAVE SNAPSHOT ---
         // Store the final stats (Volume, Holders, etc.) in AdminLog to persist them
+        console.log("[RUG API] Saving snapshot...", { userId: session?.user?.id, stats, tokenAddress });
+
         if (session?.user?.id && stats) {
-            await prisma.adminLog.create({
+            const log = await prisma.adminLog.create({
                 data: {
                     adminId: session.user.id,
                     action: 'RUG_SNAPSHOT',
@@ -37,6 +39,9 @@ export async function POST(req: Request) {
                     details: JSON.stringify(stats)
                 }
             });
+            console.log("[RUG API] Snapshot saved:", log.id);
+        } else {
+            console.warn("[RUG API] Snapshot NOT saved. Missing session or stats.");
         }
 
         return NextResponse.json({ success: true, rugged: true });
