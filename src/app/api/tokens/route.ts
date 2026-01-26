@@ -75,6 +75,7 @@ export async function GET(req: Request) {
     try {
         const token = await prisma.token.findFirst({
             where: { address: address },
+            include: { liquidityPools: true }
         });
 
         if (!token) {

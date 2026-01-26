@@ -9,6 +9,7 @@ interface LiveRevenueChartProps {
     onUpdate?: (price: number, step: number) => void;
     createdAt?: string | Date;
     tokenAddress?: string;
+    isRugged?: boolean;
 }
 
 // Simple seeded random function (Linear Congruential Generator)
@@ -36,7 +37,7 @@ function stringToSeed(str: string): number {
     return Math.abs(hash);
 }
 
-export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, tokenAddress }: LiveRevenueChartProps) {
+export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, tokenAddress, isRugged = false }: LiveRevenueChartProps) {
     const [visibleCount, setVisibleCount] = useState(0);
 
     // Generate accurate volatile data DETERMINISTICALLY
@@ -99,19 +100,20 @@ export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, 
         setVisibleCount(initialStep);
 
         // Trigger immediate update for stats
-        if (data[initialStep] && onUpdate) {
+        if (data[initialStep] && onUpdate && !isRugged) {
             onUpdate(data[initialStep].val, data[initialStep].min);
         }
 
-    }, [createdAt, onUpdate, data]);
+    }, [createdAt, onUpdate, data, isRugged]);
 
     // Animation Tick - Real-time (approximate)
     useEffect(() => {
+        if (isRugged) return; // Stop animation if rugged
+
         const interval = setInterval(() => {
             setVisibleCount(prev => {
-                if (!createdAt) return prev + 1; // Fallback to auto-play if no createdAt
+                if (!createdAt) return prev + 1; // Fallback
 
-                // Recalculate based on wall clock to stay in sync even if tab sleeps
                 const start = new Date(createdAt).getTime();
                 const now = Date.now();
                 const diffMs = now - start;
@@ -119,10 +121,9 @@ export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, 
 
                 const next = Math.min(targetStep, 100);
 
-                if (next < prev) return prev; // Don't go back
+                if (next < prev) return prev;
 
                 if (next > prev || next === prev) {
-                    // Check if valid index
                     const point = data[next];
                     if (point && onUpdate) {
                         onUpdate(point.val, point.min);
@@ -130,10 +131,10 @@ export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, 
                 }
                 return next;
             });
-        }, 5000); // Check every 5 seconds to sync time
+        }, 5000);
 
         return () => clearInterval(interval);
-    }, [data, onUpdate, createdAt]);
+    }, [data, onUpdate, createdAt, isRugged]);
 
     // Dimensions
     const width = 600;
@@ -150,7 +151,23 @@ export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, 
     const getX = (min: number) => (min / 100) * (width - padding * 2) + padding;
     const getY = (val: number) => height - padding - (val / currentMax) * (height - padding * 2);
 
-    const visibleData = data.slice(0, visibleCount + 1); // +1 to include current
+    // Data manipulation for RUG PULL
+    let visibleData = data.slice(0, visibleCount + 1);
+    let currentVal = visibleData.length > 0 ? visibleData[visibleData.length - 1].val : 0;
+
+    if (isRugged) {
+        // If rugged, we effectively want to show a sharp drop to 0 from the last point
+        // We append a point that is [current_min + 0.1, 0]
+        if (visibleData.length > 0) {
+            const last = visibleData[visibleData.length - 1];
+            visibleData = [
+                ...visibleData,
+                { min: last.min + 1, val: 0 } // Drop to zero in next virtual minute
+            ];
+            currentVal = 0;
+            if (onUpdate) onUpdate(0, visibleCount + 1); // Notify parent of 0
+        }
+    }
 
     // Create Path 'd' attribute
     const pathD = visibleData.length > 0
@@ -160,41 +177,46 @@ export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, 
 
     // Create Area fill 'd' attribute
     const areaD = visibleData.length > 0
-        ? `${pathD} L ${getX(visibleData[visibleData.length - 1].min)} ${height} L ${getX(0)} ${height} Z`
+        ? `${pathD} L ${getX(visibleData[visibleData.length - 1].min)} ${visibleData[visibleData.length - 1].val === 0 ? height : height} L ${getX(0)} ${height} Z`
         : '';
-
-    const currentVal = visibleData.length > 0 ? visibleData[visibleData.length - 1].val : 0;
 
     // Calculate simulated 30m change
     const start30mIndex = Math.max(0, visibleCount - 30);
     const val30mAgo = data[start30mIndex]?.val || 0;
     const change = currentVal - val30mAgo;
-    const isPositive = change >= 0;
+    const isPositive = !isRugged && change >= 0;
 
     return (
-        <div className="w-full rounded-xl border border-border bg-black/40 p-6 shadow-xl backdrop-blur-md relative overflow-hidden group">
+        <div className={`w-full rounded-xl border ${isRugged ? 'border-red-500/50 bg-red-900/10' : 'border-border bg-black/40'} p-6 shadow-xl backdrop-blur-md relative overflow-hidden group transition-all duration-1000`}>
 
             {/* Header */}
             <div className="flex justify-between items-start mb-6 z-10 relative">
                 <div>
-                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                        <Activity className="h-5 w-5 text-primary animate-pulse" />
+                    <h3 className={`text-lg font-bold flex items-center gap-2 ${isRugged ? 'text-red-500' : 'text-white'}`}>
+                        <Activity className={`h-5 w-5 ${isRugged ? 'text-red-500 animate-bounce' : 'text-primary animate-pulse'}`} />
                         {title}
                     </h3>
                 </div>
                 <div className="text-right">
-                    <div className="text-3xl font-bold font-mono text-white tracking-tight">
+                    <div className={`text-3xl font-bold font-mono tracking-tight ${isRugged ? 'text-red-500' : 'text-white'}`}>
                         ${currentVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
-                    <div className={`text-sm font-medium flex items-center justify-end gap-1 ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
-                        <TrendingUp className={`h-3 w-3 ${!isPositive && 'rotate-180'}`} />
-                        {isPositive ? '+' : ''}${Math.abs(change).toFixed(2)} (Last 30m)
-                    </div>
+                    {isRugged ? (
+                        <div className="text-sm text-red-500 font-bold flex items-center justify-end gap-1 uppercase">
+                            <TrendingUp className="h-3 w-3 rotate-180" />
+                            RUG PULL DETECTED
+                        </div>
+                    ) : (
+                        <div className={`text-sm font-medium flex items-center justify-end gap-1 ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+                            <TrendingUp className={`h-3 w-3 ${!isPositive && 'rotate-180'}`} />
+                            {isPositive ? '+' : ''}${Math.abs(change).toFixed(2)} (Last 30m)
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* Graph Area */}
-            <div className="w-full aspect-[3/1] bg-surface/30 rounded-lg relative overflow-hidden border border-white/5">
+            <div className={`w-full aspect-[3/1] bg-surface/30 rounded-lg relative overflow-hidden border ${isRugged ? 'border-red-500/30' : 'border-white/5'}`}>
                 {/* Grid Lines */}
                 <div className="absolute inset-x-0 bottom-0 h-px bg-white/10" />
                 <div className="absolute inset-x-0 top-1/2 h-px bg-white/5 border-t border-dashed border-white/10" />
@@ -205,12 +227,16 @@ export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, 
                             <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.5" />
                             <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
                         </linearGradient>
+                        <linearGradient id="gradientRed" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#ef4444" stopOpacity="0.5" />
+                            <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
+                        </linearGradient>
                     </defs>
 
                     {/* Area Fill */}
                     <motion.path
                         d={areaD}
-                        fill="url(#gradientFill)"
+                        fill={isRugged ? "url(#gradientRed)" : "url(#gradientFill)"}
                         animate={{ d: areaD }}
                         transition={{ type: "tween", ease: "linear", duration: 0.5 }}
                     />
@@ -219,7 +245,7 @@ export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, 
                     <motion.path
                         d={pathD}
                         fill="none"
-                        stroke={isPositive ? "#4ade80" : "#f87171"} // Green/Red based on trend
+                        stroke={isRugged ? "#ef4444" : (isPositive ? "#4ade80" : "#f87171")}
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -227,13 +253,13 @@ export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, 
                         transition={{ type: "tween", ease: "linear", duration: 0.5 }}
                     />
 
-                    {/* Live Dot at tip */}
+                    {/* Live Dot */}
                     {visibleData.length > 0 && (
                         <circle
                             cx={getX(visibleData[visibleData.length - 1].min)}
                             cy={getY(visibleData[visibleData.length - 1].val)}
                             r="4"
-                            fill="white"
+                            fill={isRugged ? "#ef4444" : "white"}
                             className="drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
                         />
                     )}
@@ -248,7 +274,7 @@ export function LiveRevenueChart({ title = "Price Action", onUpdate, createdAt, 
             </div>
 
             <div className="absolute bottom-4 right-4 text-[10px] text-white/10 pointer-events-none uppercase tracking-[0.2em] font-bold">
-                {visibleCount < 5 ? 'Waiting for Volume' : 'Live Trading'}
+                {isRugged ? 'CRASHED' : (visibleCount < 5 ? 'Waiting for Volume' : 'Live Trading')}
             </div>
 
         </div>
