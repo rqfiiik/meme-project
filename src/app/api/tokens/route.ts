@@ -104,7 +104,11 @@ export async function GET(req: Request) {
             }
         }
 
-        return NextResponse.json({ ...token, ruggedSnapshot });
+        return NextResponse.json({
+            ...token,
+            status: isRugged ? 'rugged' : 'active',
+            ruggedSnapshot
+        });
     } catch (error) {
         console.error('Error fetching token:', error);
         return NextResponse.json({ error: 'Failed to fetch token' }, { status: 500 });
