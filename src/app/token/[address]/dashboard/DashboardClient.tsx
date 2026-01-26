@@ -88,7 +88,7 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
                 {/* Main Chart Area (Left - 2cols) */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Live Chart */}
-                    <LiveRevenueChart title="Price Action (Simulation)" />
+                    <LiveRevenueChart title="Price Action" />
 
                     {/* Quick Stats */}
                     <div className="grid grid-cols-3 gap-4">
