@@ -41,11 +41,11 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
         setIsLiquidityModalOpen(false);
         setLiveStats({
             price: 0,
-            marketCap: 0,
-            volume: 1200, // Reset to initial base volume
+            marketCap: 0, // Start at 0
+            volume: 0,    // Start fresh volume for new token
             holders: 1
         });
-        setTokenData(null); // Clear previous token data while loading
+        setTokenData(null);
         setIsLoading(true);
     }, [tokenAddress]);
 
@@ -144,18 +144,18 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
                         rawAmount: data.liquidityPools?.[0]?.quoteAmount || 0
                     }
                 });
-            } catch (error) {
+            } catch (error: any) {
                 console.error("Failed to fetch token data", error);
-                // Fallback to mock if API fails (optional, but good for stability during dev)
+                // Set generic fallback but include the address so we know it's trying
                 setTokenData({
-                    name: "Sample Meme Coin",
-                    symbol: "MEME",
+                    name: "Unknown Token (Not Found)",
+                    symbol: "???",
                     address: tokenAddress,
                     supply: "1,000,000,000",
-                    description: "Fallback mock data - API failed.",
+                    description: `Could not load token data. Error: ${error.message || "Unknown error"}`,
                     image: null,
-                    creator: "You",
-                    status: "Error",
+                    creator: "Unknown",
+                    status: "active", // Default to active so UI doesn't break
                     clonedFrom: null,
                     marketCap: "$0",
                     price: "$0",
@@ -163,7 +163,8 @@ export function DashboardClient({ tokenAddress }: DashboardClientProps) {
                     liquidity: {
                         pair: "SOL / ???",
                         locked: false,
-                        amount: "0 SOL"
+                        amount: "0 SOL",
+                        rawAmount: 0
                     }
                 });
             } finally {
