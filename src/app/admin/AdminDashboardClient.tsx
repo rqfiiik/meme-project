@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Rocket, Users, DollarSign, RefreshCw } from 'lucide-react';
+import { LiveRevenueChart } from '@/components/admin/LiveRevenueChart';
 
 export default function AdminDashboardClient() {
     const [stats, setStats] = useState<any>(null);
@@ -54,6 +55,9 @@ export default function AdminDashboardClient() {
                         <RefreshCw className="h-5 w-5 text-primary" />
                     </button>
                 </div>
+
+                {/* Live Revenue Simulation */}
+                <LiveRevenueChart />
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
