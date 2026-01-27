@@ -36,6 +36,18 @@ model User {
   firstSeen DateTime @default(now())
   isAutoPay Boolean  @default(false)
 
+  // Affiliate & Creator
+  isCreator       Boolean  @default(false)
+  promoCode       String?  @unique
+  commissionRate  Float    @default(0.5)
+  
+  referrerId      String?
+  referrer        User?    @relation("UserReferrals", fields: [referrerId], references: [id])
+  referredUsers   User[]   @relation("UserReferrals")
+  
+  affiliateEarnings AffiliateEarning[] @relation("CreatorEarnings")
+  referralEarnings  AffiliateEarning[] @relation("ReferredEarnings")
+
   accounts       Account[]
   sessions       Session[]
   transactions   Transaction[]
@@ -175,6 +187,8 @@ model Transaction {
   type        String   @default("token_creation") // token_creation, liquidity_pool, subscription, copy_coin
   status      String   @default("success") // "success", "failed", "pending"
   user        User?    @relation(fields: [userId], references: [id])
+  
+  affiliateEarnings AffiliateEarning[]
 }
 
 model Subscription {
@@ -235,4 +249,19 @@ model BlogTag {
   name        String     @unique
   slug        String     @unique
   posts       BlogPost[]
+}
+
+model AffiliateEarning {
+  id              String   @id @default(cuid())
+  creatorId       String
+  creator         User     @relation("CreatorEarnings", fields: [creatorId], references: [id])
+  
+  referredUserId  String
+  referredUser    User     @relation("ReferredEarnings", fields: [referredUserId], references: [id])
+  
+  transactionId   String
+  transaction     Transaction @relation(fields: [transactionId], references: [id])
+  
+  amount          Float
+  createdAt       DateTime @default(now())
 }
