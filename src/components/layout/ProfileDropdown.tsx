@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
-import { LayoutDashboard, Settings, LogOut, Shield } from 'lucide-react';
+import { LayoutDashboard, Settings, LogOut, Shield, TrendingUp } from 'lucide-react';
 import { SettingsModal } from './SettingsModal';
 import { DashboardModal } from '../dashboard/DashboardModal';
 import { AdminModal } from '@/components/admin/AdminModal';
@@ -103,6 +103,17 @@ export function ProfileDropdown() {
                                 <LayoutDashboard className="h-4 w-4" />
                                 Dashboard
                             </button>
+
+                            {(session.user as any).isCreator && (
+                                <Link
+                                    href="/affiliate"
+                                    onClick={() => setIsOpen(false)}
+                                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-text-secondary hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left"
+                                >
+                                    <TrendingUp className="h-4 w-4" />
+                                    Creator Dashboard
+                                </Link>
+                            )}
 
                             <button
                                 onClick={() => { setIsOpen(false); setIsSettingsOpen(true); }}

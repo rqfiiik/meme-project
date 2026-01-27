@@ -79,6 +79,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         async jwt({ token, user }) {
             if (user) {
                 token.role = user.role;
+                token.isCreator = (user as any).isCreator; // Cast to any as types might lag
             }
             return token;
         },
@@ -86,6 +87,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             if (session.user) {
                 session.user.role = token.role as string;
                 session.user.id = token.sub as string;
+                (session.user as any).isCreator = token.isCreator;
             }
             return session;
         }
