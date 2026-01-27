@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { Copy, Users, DollarSign, TrendingUp, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import Link from 'next/link';
 
 // Helper to copy to clipboard (client component logic needed, or simple script)
 // We'll make a client component for the copy buttons or just use simple inline actions
@@ -31,8 +32,7 @@ export default async function AffiliatePage() {
                     <AlertTriangle className="w-12 h-12" />
                 </div>
                 <h1 className="text-3xl font-bold text-white mb-2">Access Denied</h1>
-                import Link from 'next/link';
-                // ...
+
                 <p className="text-gray-400 max-w-md">
                     You are not registered as a Creator Affiliate. Please contact support to apply for the creator program.
                 </p>
