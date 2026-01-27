@@ -90,4 +90,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return session;
         }
     },
+    events: {
+        async createUser({ user }) {
+            try {
+                const { cookies } = await import("next/headers");
+                const cookieStore = await cookies();
+                const refCode = cookieStore.get("affiliate_ref")?.value;
+
+                if (refCode && user.id) {
+                    // Find referrer - Cast to any to bypass missing strict types from manual SQL update
+                    const referrer = await (prisma.user as any).findUnique({
+                        where: { promoCode: refCode }
+                    });
+
+                    // Update user if referrer exists, is a creator, and is not self
+                    if (referrer && referrer.isCreator && referrer.id !== user.id) {
+                        await (prisma.user as any).update({
+                            where: { id: user.id },
+                            data: { referrerId: referrer.id }
+                        });
+                        console.log(`[Affiliate] Linked user ${user.id} to referrer ${referrer.id} (${refCode})`);
+                    }
+                }
+            } catch (error) {
+                console.error("[Affiliate] Error linking referrer:", error);
+            }
+        }
+    },
 })

@@ -12,7 +12,7 @@ export default async function UsersPage() {
         redirect("/");
     }
 
-    const users = await prisma.user.findMany({
+    const users = await (prisma.user as any).findMany({
         orderBy: { firstSeen: 'desc' },
         take: 50,
         select: {
@@ -25,6 +25,9 @@ export default async function UsersPage() {
             role: true,
             status: true,
             firstSeen: true,
+            isCreator: true,
+            promoCode: true,
+            commissionRate: true,
             _count: {
                 select: {
                     wallets: true,

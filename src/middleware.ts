@@ -2,6 +2,7 @@ import { auth } from "@/auth"
 import { NextResponse } from "next/server"
 
 export default auth((req) => {
+    let response = NextResponse.next();
     const isLoggedIn = !!req.auth
     const isOnProtectedPath =
         req.nextUrl.pathname.startsWith("/create-token") ||
@@ -10,10 +11,21 @@ export default auth((req) => {
         req.nextUrl.pathname.startsWith("/api/payment");
 
     if (isOnProtectedPath && !isLoggedIn) {
-        return NextResponse.redirect(new URL("/api/auth/signin", req.nextUrl))
+        response = NextResponse.redirect(new URL("/api/auth/signin", req.nextUrl))
     }
 
-    return NextResponse.next()
+    // Affiliate Tracking Logic
+    const ref = req.nextUrl.searchParams.get("ref");
+    if (ref) {
+        response.cookies.set("affiliate_ref", ref, {
+            path: "/",
+            maxAge: 30 * 24 * 60 * 60, // 30 days
+            httpOnly: true,
+            sameSite: "lax",
+        });
+    }
+
+    return response;
 })
 
 export const config = {

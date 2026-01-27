@@ -14,6 +14,9 @@ interface User {
     status: string;
     planType: string | null;
     firstSeen: Date;
+    isCreator?: boolean;
+    promoCode?: string | null;
+    commissionRate?: number;
     _count: {
         wallets: number;
         subscriptions: number;
@@ -30,7 +33,7 @@ export function UsersClient({ users }: { users: User[] }) {
                     <thead className="bg-white/5 text-xs uppercase font-semibold text-white">
                         <tr>
                             <th className="px-6 py-4">User</th>
-                            <th className="px-6 py-4">Linked</th>
+                            <th className="px-6 py-4">Affiliate</th>
                             <th className="px-6 py-4">Status & Role</th>
                             <th className="px-6 py-4">Joined</th>
                             <th className="px-6 py-4 text-right">Actions</th>
@@ -51,14 +54,15 @@ export function UsersClient({ users }: { users: User[] }) {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-xs text-white bg-white/5 px-2 py-0.5 rounded w-fit">
-                                            💳 {user._count.wallets} Wallets
-                                        </span>
-                                        <span className="text-xs text-white bg-white/5 px-2 py-0.5 rounded w-fit">
-                                            ✨ {user._count.subscriptions} Subs
-                                        </span>
-                                    </div>
+                                    {user.isCreator ? (
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-xs text-green-400 font-medium">Creator</span>
+                                            <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded">Code: {user.promoCode}</span>
+                                            <span className="text-[10px] text-gray-400">Rate: {(user.commissionRate || 0.5) * 100}%</span>
+                                        </div>
+                                    ) : (
+                                        <span className="text-xs text-gray-600">-</span>
+                                    )}
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="flex flex-col gap-1 items-start">
@@ -110,8 +114,47 @@ function UserActions({ user }: { user: User }) {
         }
     };
 
+    const handleAffiliate = async () => {
+        const isCreator = confirm("Make this user a Creator? (Cancel for No, OK for Yes)");
+        let promoCode = user.promoCode;
+        let commissionRate = user.commissionRate;
+
+        if (isCreator) {
+            promoCode = prompt("Enter Promo Code:", user.promoCode || "") || promoCode;
+            commissionRate = parseFloat(prompt("Enter Commission Rate (0.1 - 1.0):", user.commissionRate?.toString() || "0.5") || "0.5");
+        }
+
+        setIsLoading(true);
+        try {
+            await fetch('/api/admin/users/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: user.id,
+                    isCreator,
+                    promoCode,
+                    commissionRate
+                })
+            });
+            window.location.reload();
+        } catch (error) {
+            console.error(error);
+            alert("Update failed");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="flex justify-end gap-2">
+            <button
+                onClick={handleAffiliate}
+                disabled={isLoading}
+                className="p-2 rounded-lg hover:bg-purple-500/20 text-purple-500 transition-colors"
+                title="Manage Affiliate"
+            >
+                <Shield className="h-4 w-4" />
+            </button>
             <button
                 onClick={() => handleAction(user.status === 'suspended' ? 'activate' : 'flag')}
                 disabled={isLoading}
@@ -121,7 +164,7 @@ function UserActions({ user }: { user: User }) {
                     }`}
                 title={user.status === 'suspended' ? "Activate" : "Flag"}
             >
-                <Shield className="h-4 w-4" />
+                <ShieldAlert className="h-4 w-4" />
             </button>
             <button
                 onClick={() => handleAction('ban')}
