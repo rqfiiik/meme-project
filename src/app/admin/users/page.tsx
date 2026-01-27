@@ -38,7 +38,7 @@ export default async function UsersPage() {
     });
 
     // Ensure status is stringent (it might be null in DB if old records)
-    const sanitizedUsers = users.map(u => ({
+    const sanitizedUsers = users.map((u: any) => ({
         ...u,
         status: u.status || 'active'
     }));
