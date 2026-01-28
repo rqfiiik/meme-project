@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/Button';
+import { useSession } from 'next-auth/react';
 import { AlertTriangle, Check, ShieldCheck } from 'lucide-react';
 
 interface ReviewLaunchProps {
