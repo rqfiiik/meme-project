@@ -17,4 +17,5 @@ export interface TokenFormData {
     isCustomCreatorInfo: boolean;
     creatorName: string;
     creatorWebsite: string;
+    refCode?: string;
 }
