@@ -20,7 +20,10 @@ if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
 (async () => {
     console.log('Launching browser...');
-    const browser = await puppeteer.launch({ headless: 'new' });
+    const browser = await puppeteer.launch({
+        headless: 'new',
+        executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+    });
     const page = await browser.newPage();
 
     for (const item of urls) {
