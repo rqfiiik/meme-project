@@ -2,7 +2,7 @@ import { Button } from '../../ui/Button';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { ShieldAlert, Rocket, Zap } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { createPayAndSubscribeTransaction } from '../../../lib/solana/subscription';
 import { usePayment } from '../../../hooks/usePayment';
