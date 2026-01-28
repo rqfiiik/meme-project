@@ -33,8 +33,9 @@ const VIEWPORTS = [
 (async () => {
     console.log('Starting screenshot generation...');
     const browser = await puppeteer.launch({
-        headless: "new",
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        headless: 'shell', // Required for chrome-headless-shell
+        executablePath: 'C:\\Users\\WelCome\\.cache\\puppeteer\\chrome-headless-shell\\win64-144.0.7559.96\\chrome-headless-shell-win64\\chrome-headless-shell.exe',
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu']
     });
     const page = await browser.newPage();
 
