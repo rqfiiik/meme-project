@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Wallet, Receipt, TrendingUp, RefreshCw, Shield, ArrowLeft, FileText } from 'lucide-react';
+import { LayoutDashboard, Users, Wallet, Receipt, TrendingUp, RefreshCw, Shield, ArrowLeft, FileText, Megaphone } from 'lucide-react';
 
 const navigation = [
     { name: 'Overview', href: '/admin', icon: LayoutDashboard },
     { name: 'Users', href: '/admin/users', icon: Users },
+    { name: 'Creators', href: '/admin/creators', icon: Megaphone },
     { name: 'Wallets', href: '/admin/wallets', icon: Wallet },
     { name: 'Transactions', href: '/admin/transactions', icon: Receipt },
     { name: 'Revenue', href: '/admin/revenue', icon: TrendingUp },
