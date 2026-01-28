@@ -10,7 +10,7 @@ TO authenticated
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM "public"."User" 
-    WHERE "User"."id" = (select auth.uid()) 
+    WHERE "User"."id" = (select auth.uid()::text) 
     AND "User"."role" = 'admin'
   )
 );
@@ -23,7 +23,7 @@ TO authenticated
 USING (
   EXISTS (
     SELECT 1 FROM "public"."User" 
-    WHERE "User"."id" = (select auth.uid()) 
+    WHERE "User"."id" = (select auth.uid()::text) 
     AND "User"."role" = 'admin'
   )
 );
@@ -36,7 +36,7 @@ ON "public"."AffiliateEarning"
 FOR SELECT
 TO authenticated
 USING (
-  "creatorId" = (select auth.uid())
+  "creatorId" = (select auth.uid()::text)
 );
 
 -- 3. Fix multiple_permissive_policies for AdminLog
