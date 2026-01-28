@@ -76,11 +76,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         strategy: "jwt",
     },
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger, session }) {
             if (user) {
                 token.role = user.role;
-                token.isCreator = (user as any).isCreator; // Cast to any as types might lag
+                token.isCreator = (user as any).isCreator;
+
+                // Fetch referrer code if user has referrerId
+                if ((user as any).referrerId) {
+                    const referrer = await prisma.user.findUnique({
+                        where: { id: (user as any).referrerId },
+                        select: { promoCode: true }
+                    });
+                    if (referrer?.promoCode) {
+                        token.affiliateCode = referrer.promoCode;
+                    }
+                }
             }
+
+            // Handle session update to refresh data
+            if (trigger === "update" && session) {
+                if (session.user.affiliateCode) token.affiliateCode = session.user.affiliateCode;
+            }
+
             return token;
         },
         async session({ session, token }) {
@@ -88,6 +105,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 session.user.role = token.role as string;
                 session.user.id = token.sub as string;
                 (session.user as any).isCreator = token.isCreator;
+                (session.user as any).affiliateCode = token.affiliateCode;
             }
             return session;
         }

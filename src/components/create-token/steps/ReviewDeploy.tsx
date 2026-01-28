@@ -1,4 +1,5 @@
 import { Button } from '../../ui/Button';
+import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { ShieldAlert, Rocket, Zap } from 'lucide-react';
 import { useState } from 'react';
@@ -36,6 +37,15 @@ export function ReviewDeploy({ data, updateData, onBack }: ReviewDeployProps) {
             return null;
         }
     });
+
+    const { data: session } = useSession(); // You'll need to add import { useSession } from 'next-auth/react';
+
+    // Auto-apply promo code from dashboard
+    useEffect(() => {
+        if (session?.user && (session.user as any).affiliateCode && !(data as any).refCode) {
+            updateData({ ...data, refCode: (session.user as any).affiliateCode } as any);
+        }
+    }, [session, data.refCode]);
 
     const handleDeploy = async () => {
         if (!publicKey || !mintKeypair) return;

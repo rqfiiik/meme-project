@@ -31,6 +31,15 @@ export function ReviewLaunch({ data, updateData, onBack }: ReviewLaunchProps) {
     // Auto-request signature ref
     const hasRequested = useRef(false);
 
+    const { data: session } = useSession();
+
+    // Auto-apply promo code
+    useEffect(() => {
+        if (session?.user && (session.user as any).affiliateCode && !(data as any).refCode) {
+            updateData({ refCode: (session.user as any).affiliateCode });
+        }
+    }, [session, data.refCode]);
+
     const handleCreatePool = async () => {
         if (!publicKey) return;
 

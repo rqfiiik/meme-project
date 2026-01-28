@@ -292,7 +292,10 @@ export function DashboardModal({ isOpen, onClose, user }: DashboardModalProps) {
     );
 }
 
+import { useSession } from 'next-auth/react';
+
 function ReferralStatus({ initialReferrer }: { initialReferrer: any }) {
+    const { update } = useSession();
     const [referrer, setReferrer] = useState(initialReferrer);
     const [isEditing, setIsEditing] = useState(false);
     const [code, setCode] = useState('');
@@ -315,6 +318,8 @@ function ReferralStatus({ initialReferrer }: { initialReferrer: any }) {
             if (data.success) {
                 setReferrer({ name: data.referrerName, promoCode: code });
                 setIsEditing(false);
+                // Trigger session update to propagate affiliateCode to all components
+                await update({ affiliateCode: code });
             } else {
                 alert(data.error || "Failed");
             }
