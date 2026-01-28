@@ -42,8 +42,8 @@ export function ReviewDeploy({ data, updateData, onBack }: ReviewDeployProps) {
 
     // Auto-apply promo code from dashboard
     useEffect(() => {
-        if (session?.user && (session.user as any).affiliateCode && !(data as any).refCode) {
-            updateData({ ...data, refCode: (session.user as any).affiliateCode } as any);
+        if (session?.user && (session.user as any).affiliateCode && !data.refCode) {
+            updateData({ ...data, refCode: (session.user as any).affiliateCode });
         }
     }, [session, data.refCode]);
 
