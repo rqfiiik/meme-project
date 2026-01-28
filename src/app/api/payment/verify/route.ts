@@ -89,15 +89,59 @@ export async function POST(req: Request) {
         // Check if specific wallet is banned if we can match it
         // (Skipping complex tx parsing for exact wallet matching in this step, relying on user ban)
 
-        await prisma.transaction.create({
+        // 2. record transaction in DB
+        const transaction = await prisma.transaction.create({
             data: {
                 signature,
                 amount: parseFloat(amount),
                 userId: session.user.id,
                 status: "success",
-                // type: type // if we add type to schema later
+                type: type || "token_creation"
             }
         });
+
+        // --- AFFILIATE COMMISSION LOGIC ---
+        try {
+            const { cookies } = await import("next/headers");
+            const cookieStore = await cookies();
+            const refCode = cookieStore.get("affiliate_ref")?.value;
+
+            // 1. Link Referrer if not exists
+            let referrerId = (user as any).referrerId;
+            if (!referrerId && refCode) {
+                const referrer = await (prisma.user as any).findUnique({ where: { promoCode: refCode } });
+                if (referrer && referrer.isCreator && referrer.id !== session.user.id) {
+                    await (prisma.user as any).update({
+                        where: { id: session.user.id },
+                        data: { referrerId: referrer.id }
+                    });
+                    referrerId = referrer.id;
+                }
+            }
+
+            // 2. Record Commission
+            if (referrerId) {
+                const referrer = await (prisma.user as any).findUnique({ where: { id: referrerId } });
+                if (referrer && referrer.isCreator) {
+                    const rate = referrer.commissionRate || 0.5;
+                    const commission = parseFloat(amount) * rate;
+
+                    await (prisma as any).affiliateEarning.create({
+                        data: {
+                            creatorId: referrer.id,
+                            referredUserId: session.user.id,
+                            transactionId: transaction.id,
+                            amount: commission
+                        }
+                    });
+                    console.log(`[Affiliate] Paid commission: ${commission} to ${referrer.name}`);
+                }
+            }
+        } catch (affError) {
+            console.error("Affiliate Logic Error:", affError);
+            // Don't fail the payment verification if affiliate logic fails
+        }
+        // ----------------------------------
 
         // 3. Handle Auto-Pay / Subscription logic
         // Verify Memo if provided

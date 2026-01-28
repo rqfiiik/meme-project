@@ -28,6 +28,8 @@ export function CreatePoolWizard() {
     // Hydrate from URL
     useEffect(() => {
         const tokenAddr = searchParams.get('token');
+        const refCode = searchParams.get('ref');
+
         if (tokenAddr && !formData.selectedToken) {
             setFormData((prev: any) => ({
                 ...prev,
@@ -36,11 +38,15 @@ export function CreatePoolWizard() {
                     name: searchParams.get('name') || 'Unknown Token',
                     symbol: searchParams.get('symbol') || 'UNK',
                     image: searchParams.get('image') || null
-                }
+                },
+                refCode: refCode // Capture referral
             }));
             // Optionally auto-advance to step 2 if token is provided? 
             // setCurrentStep(2); 
             // User might want to verify Step 1 first.
+        } else if (refCode && !formData.refCode) {
+            // If only ref code is present or token already set
+            setFormData((prev: any) => ({ ...prev, refCode: refCode }));
         }
     }, [searchParams]);
 

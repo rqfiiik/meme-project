@@ -114,7 +114,7 @@ export default async function AffiliatePage() {
                 {/* Links Section */}
                 <AffiliateClient
                     promoCode={user.promoCode}
-                    baseUrl={process.env.NEXT_PUBLIC_APP_URL || 'https://creatememe.io'}
+                    baseUrl={process.env.NEXT_PUBLIC_APP_URL || 'https://meme-project-teal.vercel.app'}
                 />
 
                 {/* Earnings Table */}

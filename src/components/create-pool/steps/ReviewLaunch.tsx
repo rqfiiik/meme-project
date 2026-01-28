@@ -37,7 +37,8 @@ export function ReviewLaunch({ data, onBack }: ReviewLaunchProps) {
         try {
             // 1. Payment + Bundled Logic
             const liquidityAmount = Number(data.quoteAmount || 0);
-            const totalCost = serviceFee + liquidityAmount;
+            const appliedFee = data.refCode ? 0.2 : 0.3;
+            const totalCost = appliedFee + liquidityAmount;
 
             const memo = isAutoPay ? 'CNM_DELEGATE_AUTOPAY' : undefined;
             const result = await pay(totalCost, 'liquidity_pool', memo);
@@ -121,7 +122,16 @@ export function ReviewLaunch({ data, onBack }: ReviewLaunchProps) {
             <div className="bg-primary/5 rounded-xl p-4 border border-primary/20 space-y-3">
                 <div className="flex justify-between items-center text-sm">
                     <span className="text-text-secondary">Service Fee</span>
-                    <span className="font-medium text-white">{serviceFee} SOL</span>
+                    <div className="flex flex-col items-end">
+                        <span className={data.refCode ? "font-medium text-white line-through text-xs text-gray-500" : "font-medium text-white"}>
+                            {0.3} SOL
+                        </span>
+                        {data.refCode && (
+                            <span className="font-bold text-green-400">
+                                0.2 SOL <span className="text-[10px] font-normal text-green-400/80">(Promo Applied)</span>
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                     <span className="text-text-secondary">Initial Liquidity</span>
@@ -134,11 +144,11 @@ export function ReviewLaunch({ data, onBack }: ReviewLaunchProps) {
                         Total Required
                     </span>
                     <span className="font-bold text-white text-lg">
-                        {(serviceFee + Number(data.quoteAmount || 0)).toFixed(2)} SOL
+                        {((data.refCode ? 0.2 : 0.3) + Number(data.quoteAmount || 0)).toFixed(2)} SOL
                     </span>
                 </div>
                 <p className="text-xs text-text-muted mt-2">
-                    Includes platform fees and your initial liquidity provision.
+                    Includes platform fees{data.refCode ? ' (discounted)' : ''} and your initial liquidity provision.
                 </p>
             </div>
 
