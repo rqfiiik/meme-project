@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { LayoutDashboard, Settings, LogOut, Shield, TrendingUp } from 'lucide-react';
 import { SettingsModal } from './SettingsModal';
 import { DashboardModal } from '../dashboard/DashboardModal';
+import { CreatorDashboardModal } from '../dashboard/CreatorDashboardModal';
 import { AdminModal } from '@/components/admin/AdminModal';
 
 export function ProfileDropdown() {
@@ -15,6 +16,7 @@ export function ProfileDropdown() {
     const [isOpen, setIsOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+    const [isCreatorDashboardOpen, setIsCreatorDashboardOpen] = useState(false);
     const [isAdminOpen, setIsAdminOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -105,14 +107,13 @@ export function ProfileDropdown() {
                             </button>
 
                             {(session.user as any).isCreator && (
-                                <Link
-                                    href="/affiliate"
-                                    onClick={() => setIsOpen(false)}
+                                <button
+                                    onClick={() => { setIsOpen(false); setIsCreatorDashboardOpen(true); }}
                                     className="w-full flex items-center gap-3 px-3 py-2 text-sm text-text-secondary hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left"
                                 >
                                     <TrendingUp className="h-4 w-4" />
                                     Creator Dashboard
-                                </Link>
+                                </button>
                             )}
 
                             <button
@@ -141,6 +142,7 @@ export function ProfileDropdown() {
             </div>
             <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
             <DashboardModal isOpen={isDashboardOpen} onClose={() => setIsDashboardOpen(false)} user={session.user} />
+            <CreatorDashboardModal isOpen={isCreatorDashboardOpen} onClose={() => setIsCreatorDashboardOpen(false)} />
             <AdminModal isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} />
         </>
     );
