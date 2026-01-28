@@ -19,7 +19,12 @@ export function Header() {
             <div className="container flex h-16 items-center justify-between">
                 <Link href="/" className="flex items-center gap-2">
                     <div className="relative h-8 w-8 overflow-hidden rounded-full bg-primary/20 p-1.5">
-                        <Rocket className="h-full w-full text-primary" />
+                        <Image
+                            src="/logo.png"
+                            alt="ExitMeme Logo"
+                            fill
+                            className="object-contain p-1.5"
+                        />
                     </div>
                     <span className="text-xl font-bold tracking-tight text-white">ExitMeme</span>
                 </Link>
