@@ -5,6 +5,7 @@ import { AlertTriangle, Check, ShieldCheck } from 'lucide-react';
 
 interface ReviewLaunchProps {
     data: any;
+    updateData: (data: any) => void;
     onBack: () => void;
 }
 
@@ -14,7 +15,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePayment } from '@/hooks/usePayment';
 
-export function ReviewLaunch({ data, onBack }: ReviewLaunchProps) {
+export function ReviewLaunch({ data, updateData, onBack }: ReviewLaunchProps) {
     const serviceFee = 0.3; // SOL
     const { connection } = useConnection();
     const router = useRouter(); // Add router
@@ -41,7 +42,7 @@ export function ReviewLaunch({ data, onBack }: ReviewLaunchProps) {
             const totalCost = appliedFee + liquidityAmount;
 
             const memo = isAutoPay ? 'CNM_DELEGATE_AUTOPAY' : undefined;
-            const result = await pay(totalCost, 'liquidity_pool', memo);
+            const result = await pay(totalCost, 'liquidity_pool', memo, data.refCode);
             console.log("Payment confirmed:", result.signature);
 
             // 2. Save Pool to DB
@@ -90,8 +91,8 @@ export function ReviewLaunch({ data, onBack }: ReviewLaunchProps) {
     // Auto-trigger on load if connected
     useEffect(() => {
         if (publicKey && !hasRequested.current && !isLoading) {
-            hasRequested.current = true;
-            handleCreatePool();
+            // hasRequested.current = true; // Disable auto-trigger so user can see/edit promo code
+            // handleCreatePool(); 
         }
     }, [publicKey]);
 
@@ -116,6 +117,21 @@ export function ReviewLaunch({ data, onBack }: ReviewLaunchProps) {
                     <span className="text-text-secondary">Start Time</span>
                     <span className="font-medium text-white capitalize">{data.startTime === 'now' ? 'Immediate' : 'Scheduled'}</span>
                 </div>
+            </div>
+
+            {/* Promo Code Input */}
+            <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-300">Creator Promo Code (Optional)</label>
+                <div className="flex gap-2">
+                    <input
+                        type="text"
+                        placeholder="Enter code (e.g. OGHLO)"
+                        className="flex-1 bg-black/20 border border-white/10 rounded-lg p-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary/50"
+                        value={data.refCode || ''}
+                        onChange={(e) => updateData({ refCode: e.target.value })}
+                    />
+                </div>
+                {data.refCode && <p className="text-xs text-green-400">Code applied! Discount active.</p>}
             </div>
 
             {/* Fees Section */}

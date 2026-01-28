@@ -63,7 +63,7 @@ export function CreatePoolWizard() {
             case 3:
                 return <PoolConfig data={formData} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
             case 4:
-                return <ReviewLaunch data={formData} onBack={prevStep} />;
+                return <ReviewLaunch data={formData} updateData={updateData} onBack={prevStep} />;
             default:
                 return null;
         }

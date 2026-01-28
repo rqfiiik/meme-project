@@ -22,7 +22,7 @@ export function usePayment() {
             .catch(err => console.error("Failed to check admin status", err));
     }, []);
 
-    const pay = async (amountSOL: number, type: string, memo?: string) => {
+    const pay = async (amountSOL: number, type: string, memo?: string, referralCode?: string) => {
         if (!publicKey && !isAdminBypass) throw new Error("Wallet not connected");
 
         setIsProcessing(true);
@@ -38,7 +38,8 @@ export function usePayment() {
                         signature: 'bypass',
                         amount: amountSOL,
                         type,
-                        memo
+                        memo,
+                        referralCode
                     }),
                 });
 

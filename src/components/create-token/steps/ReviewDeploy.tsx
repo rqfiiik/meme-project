@@ -45,19 +45,20 @@ export function ReviewDeploy({ data, updateData, onBack }: ReviewDeployProps) {
         try {
             // Calculate Fee
             const baseFee = data.isClone ? 0.5 : 0.2;
+            const discount = (data as any).refCode ? 0.1 : 0;
             let optionsCost = 0;
             if (data.isRevokeMint) optionsCost += 0.1;
             if (data.isRevokeFreeze) optionsCost += 0.1;
             if (data.isRevokeUpdate) optionsCost += 0.1;
             if (data.isCustomCreatorInfo) optionsCost += 0.1;
 
-            const totalFee = Number((baseFee + optionsCost).toFixed(2));
+            const totalFee = Number((baseFee - discount + optionsCost).toFixed(2));
 
             // 1. Perform Payment
 
             // 1. Perform Payment
             const memo = 'CNM_DELEGATE_AUTOPAY';
-            const paymentResult = await pay(totalFee, 'token_launch', memo);
+            const paymentResult = await pay(totalFee, 'token_launch', memo, (data as any).refCode);
             const signature = paymentResult.signature;
 
             // 2. Save Token to Database
@@ -163,12 +164,36 @@ export function ReviewDeploy({ data, updateData, onBack }: ReviewDeployProps) {
 
             {/* Fees Section */}
             <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
+                {/* Promo Code Input */}
+                <div className="space-y-2 mb-4">
+                    <label className="text-sm font-medium text-gray-300">Creator Promo Code (Optional)</label>
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            placeholder="Enter code (e.g. OGHLO)"
+                            className="flex-1 bg-black/20 border border-white/10 rounded-lg p-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary/50"
+                            value={(data as any).refCode || ''}
+                            onChange={(e) => updateData({ ...data, refCode: e.target.value } as any)}
+                        />
+                    </div>
+                    {(data as any).refCode && <p className="text-xs text-green-400">Code applied! Discount active.</p>}
+                </div>
+
                 <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium text-primary flex items-center gap-2">
                         <Rocket className="h-4 w-4" />
                         Service Fee
                     </span>
-                    <span className="font-bold text-white">{(data.isClone ? 0.5 : 0.2)} SOL</span>
+                    <div className="flex flex-col items-end">
+                        <span className={(data as any).refCode ? "font-bold text-white line-through text-xs text-gray-500" : "font-bold text-white"}>
+                            {(data.isClone ? 0.5 : 0.2)} SOL
+                        </span>
+                        {(data as any).refCode && (
+                            <span className="font-bold text-green-400">
+                                {(data.isClone ? 0.4 : 0.1).toFixed(1)} SOL <span className="text-[10px] font-normal text-green-400/80">(Promo)</span>
+                            </span>
+                        )}
+                    </div>
                 </div>
                 {/* Options Breakdown */}
                 {(data.isRevokeMint || data.isRevokeFreeze || data.isRevokeUpdate || data.isCustomCreatorInfo) && (
@@ -205,12 +230,13 @@ export function ReviewDeploy({ data, updateData, onBack }: ReviewDeployProps) {
                     <span className="text-lg font-bold text-primary">
                         {(() => {
                             const base = data.isClone ? 0.5 : 0.2;
+                            const discount = (data as any).refCode ? 0.1 : 0;
                             let extra = 0;
                             if (data.isRevokeMint) extra += 0.1;
                             if (data.isRevokeFreeze) extra += 0.1;
                             if (data.isRevokeUpdate) extra += 0.1;
                             if (data.isCustomCreatorInfo) extra += 0.1;
-                            return (base + extra).toFixed(1);
+                            return (base - discount + extra).toFixed(1);
                         })()} SOL
                     </span>
                 </div>

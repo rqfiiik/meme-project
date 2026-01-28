@@ -15,7 +15,13 @@ export async function GET(req: Request) {
         const [user, tokens, transactions, wallets, subscriptions] = await Promise.all([
             prisma.user.findUnique({
                 where: { id: session.user.id },
-                select: { status: true, walletStatus: true }
+                select: {
+                    status: true,
+                    walletStatus: true,
+                    referrer: {
+                        select: { name: true, promoCode: true }
+                    }
+                }
             }),
             prisma.token.findMany({
                 where: { creatorId: session.user.id },
@@ -52,7 +58,8 @@ export async function GET(req: Request) {
                 activeSubscriptions: subscriptions.length,
             },
             accountStatus: user?.status || 'active',
-            walletStatus: user?.walletStatus || 'active'
+            walletStatus: user?.walletStatus || 'active',
+            referrer: user?.referrer || null
         });
     } catch (error) {
         console.error("Dashboard fetch error:", error);

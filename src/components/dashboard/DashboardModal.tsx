@@ -33,6 +33,7 @@ export function DashboardModal({ isOpen, onClose, user }: DashboardModalProps) {
         activeSubscriptions: 0
     });
     const [accountStatus, setAccountStatus] = useState('active');
+    const [referrer, setReferrer] = useState<any>(null);
 
     const [isLoading, setIsLoading] = useState(false);
     const [mounted, setMounted] = useState(false);
@@ -74,6 +75,7 @@ export function DashboardModal({ isOpen, onClose, user }: DashboardModalProps) {
             if (data.subscriptions) setSubscriptions(data.subscriptions);
             if (data.stats) setStats(data.stats);
             if (data.accountStatus) setAccountStatus(data.accountStatus);
+            if (data.referrer) setReferrer(data.referrer);
 
         } catch (error) {
             console.error('Failed to fetch dashboard data', error);
@@ -108,7 +110,11 @@ export function DashboardModal({ isOpen, onClose, user }: DashboardModalProps) {
                                     {accountStatus}
                                 </span>
                             </div>
-                            <p className="text-xs text-text-muted">Welcome back, {user?.name || 'Creator'}</p>
+                            <div className="flex items-center gap-2 text-xs text-text-muted">
+                                <span>Welcome back, {user?.name || 'Creator'}</span>
+                                <span className="text-gray-600">|</span>
+                                <ReferralStatus initialReferrer={referrer} />
+                            </div>
                         </div>
                     </div>
                     <button
@@ -283,5 +289,77 @@ export function DashboardModal({ isOpen, onClose, user }: DashboardModalProps) {
             </div>
         </div>,
         document.body
+    );
+}
+
+function ReferralStatus({ initialReferrer }: { initialReferrer: any }) {
+    const [referrer, setReferrer] = useState(initialReferrer);
+    const [isEditing, setIsEditing] = useState(false);
+    const [code, setCode] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (initialReferrer) setReferrer(initialReferrer);
+    }, [initialReferrer]);
+
+    const handleSave = async () => {
+        if (!code.trim()) return;
+        setLoading(true);
+        try {
+            const res = await fetch('/api/user/referral', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setReferrer({ name: data.referrerName, promoCode: code });
+                setIsEditing(false);
+            } else {
+                alert(data.error || "Failed");
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (referrer) {
+        return (
+            <span className="text-green-400">
+                Referred by: <b>{referrer.name} ({referrer.promoCode})</b>
+            </span>
+        );
+    }
+
+    if (isEditing) {
+        return (
+            <div className="flex items-center gap-2">
+                <input
+                    className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-xs text-white focus:outline-none focus:border-primary"
+                    placeholder="Enter Code"
+                    value={code}
+                    onChange={e => setCode(e.target.value)}
+                />
+                <button
+                    onClick={handleSave}
+                    disabled={loading}
+                    className="text-primary hover:text-white px-1 font-bold"
+                >
+                    {loading ? '...' : '✓'}
+                </button>
+                <button onClick={() => setIsEditing(false)} className="text-red-400 px-1">✕</button>
+            </div>
+        );
+    }
+
+    return (
+        <button
+            onClick={() => setIsEditing(true)}
+            className="text-primary hover:underline hover:text-primary/80"
+        >
+            Have a promo code?
+        </button>
     );
 }
