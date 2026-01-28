@@ -4,23 +4,32 @@ import { prisma } from "@/lib/prisma";
 import { SettingsView } from "./SettingsView";
 
 export default async function ProfilePage() {
-    // MOCK DATA FOR SCREENSHOTS
-    // const session = await auth();
-    // if (!session?.user) redirect ...
+    const session = await auth();
 
-    const user = {
-        id: "mock-user-id",
-        name: "Mock User",
-        email: "mockuser@example.com",
-        image: null,
-        username: "mockuser",
-        firstName: "Mock",
-        lastName: "User",
-        age: 25
-    };
+    if (!session?.user) {
+        redirect("/api/auth/signin");
+    }
 
-    // const user = await prisma.user.findUnique({...});
-    // if (!user) ...
+    // Fetch full user data including new fields
+    const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            age: true,
+            // Don't leak password
+        }
+    });
+
+    if (!user) {
+        // Handle edge case where session exists but db user is gone (deleted?)
+        redirect("/api/auth/signin");
+    }
 
     return (
         <div className="min-h-screen bg-black text-white p-4 md:p-8 pt-24">
